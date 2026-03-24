@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="__Persistence__\" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TwoDrive.Services\TwoDrive.Services.csproj" />
   </ItemGroup>
 
 </Project>

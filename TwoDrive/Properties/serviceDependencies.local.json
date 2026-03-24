@@ -3,6 +3,12 @@
     "identityapp1": {
       "connectionInfo": "App registration: TwoDrive, Tenant: Precio Fishbone Vietnam Training (pfvt.onmicrosoft.com - Microsoft Entra ID)",
       "type": "identityapp.default"
+    },
+    "storage1": {
+      "secretStore": "LocalSecretsFile",
+      "type": "storage.emulator",
+      "connectionId": "StorageConnectionString",
+      "dynamicId": null
     }
   }
 }

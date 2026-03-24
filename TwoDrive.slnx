@@ -1,5 +1,7 @@
 <Solution>
+  <Project Path="TwoDrive.Core/TwoDrive.Core.csproj" Id="6c535a72-7237-46f0-a670-8542ce09cb44" />
   <Project Path="TwoDrive.Persistence/TwoDrive.Persistence.csproj" Id="0ecfe642-5b76-4afc-985d-b92c5745a960" />
   <Project Path="TwoDrive.Services/TwoDrive.Services.csproj" Id="94bc9f7f-6b32-4f32-9c2a-627d263285d3" />
-  <Project Path="TwoDrive/TwoDrive.csproj" />
+  <Project Path="TwoDrive.Storage/TwoDrive.Storage.csproj" Id="44843db9-21cd-4958-ba9a-a5ef4f77472a" />
+  <Project Path="TwoDrive/TwoDrive.Api.csproj" />
 </Solution>

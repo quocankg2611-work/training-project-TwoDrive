@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Scalar.AspNetCore;
 using TwoDrive.Common;
-using TwoDrive.Endpoints;
 using TwoDrive.Persistence;
+using TwoDrive.Storage;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +17,14 @@ builder.Services.AddValidation();
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnection:blobServiceUri"]!).WithName("StorageConnection");
+    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageConnection:queueServiceUri"]!).WithName("StorageConnection");
+    clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnection:tableServiceUri"]!).WithName("StorageConnection");
+});
+builder.Services.AddStorageServices();
+
 
 var app = builder.Build();
 

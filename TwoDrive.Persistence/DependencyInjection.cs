@@ -16,20 +16,22 @@ namespace TwoDrive.Persistence
             services.AddSingleton<AuditSaveChangesInterceptor>();
 
             services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            {
                 options
                     .UseSqlServer(connectionString)
-                    .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>()));
+                    .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>());
+            });
 
             services.AddScoped<PathMaintenanceHelper>();
 
-                services.Scan(scan => scan
-                    .FromAssemblies(typeof(DependencyInjection).Assembly)
-                    .AddClasses(classes => classes.AssignableToAny(
-                        typeof(ICommandHandler<>),
-                        typeof(ICommandHandler<,>),
-                        typeof(IQueryHandler<,>)))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime());
+            services.Scan(scan => scan
+                .FromAssemblies(typeof(DependencyInjection).Assembly)
+                .AddClasses(classes => classes.AssignableToAny(
+                    typeof(ICommandHandler<>),
+                    typeof(ICommandHandler<,>),
+                    typeof(IQueryHandler<,>)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
             return services;
         }
