@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using TwoDrive.Common;
+using TwoDrive.Persistence.Queries;
 using TwoDrive.Services.Common;
-using TwoDrive.Services.Documents;
 
-namespace TwoDrive.Endpoints;
+namespace TwoDrive.Api.Endpoints;
 
 public sealed class GetDocumentsByPathEndpoint : IEndpoint
 {
@@ -22,8 +22,8 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
             Path = request.Path!
         });
 
-        var response = new Response(
-            results.Select(item => new ResponseItem(
+        var response = new GetDocumentsByPathResponse(
+            results.Select(item => new GetDocumentsByPathResponseItem(
                 item.Id,
                 item.Name,
                 item.Path,
@@ -40,18 +40,20 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
     {
         [Required]
         [MinLength(1)]
+        [FromQuery]
         public string? Path { get; init; }
     }
-
-    private sealed record Response(IReadOnlyCollection<ResponseItem> Items);
-
-    private sealed record ResponseItem(
-        Guid Id,
-        string Name,
-        string Path,
-        string DocumentType,
-        string? FileType,
-        string ModifiedBy,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
 }
+
+public sealed record GetDocumentsByPathResponseItem(
+    Guid Id,
+    string Name,
+    string Path,
+    string DocumentType,
+    string? FileType,
+    string ModifiedBy,
+    DateTime CreatedAt,
+    DateTime UpdatedAt);
+
+public sealed record GetDocumentsByPathResponse(IReadOnlyCollection<GetDocumentsByPathResponseItem> Items);
+

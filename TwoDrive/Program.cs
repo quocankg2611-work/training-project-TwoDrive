@@ -5,6 +5,7 @@ using TwoDrive.Common;
 using TwoDrive.Persistence;
 using TwoDrive.Storage;
 using Microsoft.Extensions.Azure;
+using TwoDrive.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,19 +13,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-builder.Services.AddPersistence(builder.Configuration);
-builder.Services.AddValidation();
-builder.Services.AddEndpoints(typeof(Program).Assembly);
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 builder.Services.AddAzureClients(clientBuilder =>
 {
-    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnection:blobServiceUri"]!).WithName("StorageConnection");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageConnection:queueServiceUri"]!).WithName("StorageConnection");
-    clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnection:tableServiceUri"]!).WithName("StorageConnection");
+    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnectionString:blobServiceUri"]!);
+    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageConnectionString:queueServiceUri"]!);
+    clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnectionString:tableServiceUri"]!);
 });
-builder.Services.AddStorageServices();
 
+// Infrastructure
+builder.Services.AddTwoDriveStorageServices();
+builder.Services.AddTwoDrivePersistence(builder.Configuration);
+
+// Application
+builder.Services.AddTwoDriveServices();
+
+// API
+builder.Services.AddValidation();
+builder.Services.AddEndpoints(typeof(Program).Assembly);
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -44,3 +52,5 @@ app.UseAuthorization();
 app.MapEndpoints();
 
 app.Run();
+
+public partial class Program;

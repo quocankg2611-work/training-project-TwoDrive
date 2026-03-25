@@ -11,7 +11,7 @@ public static class PathUtils
 
     public static string CombinePath(params string[] parts)
     {
-        return string.Join('/', parts);
+        return "/" + string.Join('/', parts);
     }
 
     public static string GetParentPath(string path)
@@ -34,8 +34,8 @@ public static class PathUtils
         return par.Last();
     }
 
-    public static string ConcatPath(params string[] parts)
+    public static string ConcatPath(params string[] paths)
     {
-        return string.Join('/', parts.Select(p => p.Trim('/')));
+        return "/" + string.Join('/', paths.Select(p => p.Trim('/')));
     }
 }

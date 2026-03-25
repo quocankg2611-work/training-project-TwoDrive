@@ -1,4 +1,4 @@
-﻿namespace TwoDrive.Services.Common;
+﻿namespace TwoDrive.Core.Models;
 
 public enum DocumentTypeEnum
 {

@@ -1,10 +1,20 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using TwoDrive.Common;
+using TwoDrive.Persistence.Queries;
 using TwoDrive.Services.Common;
-using TwoDrive.Services.Files;
 
-namespace TwoDrive.Endpoints;
+namespace TwoDrive.Api.Endpoints;
+
+public sealed record GetFileByIdResponse(
+        Guid Id,
+        Guid FolderId,
+        string Name,
+        string MimeType,
+        long SizeBytes,
+        string StorageKey,
+        string Checksum,
+        DateTime CreatedAt,
+        DateTime UpdatedAt);
 
 public sealed class GetFileByIdEndpoint : IEndpoint
 {
@@ -15,12 +25,12 @@ public sealed class GetFileByIdEndpoint : IEndpoint
             .WithTags("Files");
     }
 
-    private static async Task<IResult> HandleAsync([AsParameters] Request request, [FromServices] IQueryHandler<GetFileByIdQuery, FileDetailsDto> handler)
+    private static async Task<IResult> HandleAsync([FromRoute] Guid fileId, [FromServices] IQueryHandler<GetFileByIdQuery, FileDetailsDto> handler)
     {
         try
         {
-            var file = await handler.Handle(new GetFileByIdQuery { FileId = request.FileId!.Value });
-            var response = new Response(
+            var file = await handler.Handle(new GetFileByIdQuery { FileId = fileId });
+            var response = new GetFileByIdResponse(
                 file.Id,
                 file.FolderId,
                 file.Name,
@@ -38,21 +48,4 @@ public sealed class GetFileByIdEndpoint : IEndpoint
             return Results.NotFound(new { message = ex.Message });
         }
     }
-
-    public sealed class Request
-    {
-        [Required]
-        public Guid? FileId { get; init; }
-    }
-
-    private sealed record Response(
-        Guid Id,
-        Guid FolderId,
-        string Name,
-        string MimeType,
-        long SizeBytes,
-        string StorageKey,
-        string Checksum,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
 }

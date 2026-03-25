@@ -32,9 +32,9 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     private static void SeedData(DbContext dbContext)
     {
         // Seed Folders
-        if (!dbContext.Set<FolderModel>().Any())
+        if (!dbContext.Set<FolderPersistence>().Any())
         {
-            var casFolder = new FolderModel
+            var casFolder = new FolderPersistence
             {
                 Id = Guid.NewGuid(),
                 Name = "CAS",
@@ -48,14 +48,14 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         }
 
         // Seed Files
-        if (!dbContext.Set<FileModel>().Any())
+        if (!dbContext.Set<FilePersistence>().Any())
         {
-            var rootFolderId = dbContext.Set<FolderModel>()
+            var rootFolderId = dbContext.Set<FolderPersistence>()
                 .FirstOrDefault(f => f.Name == "CAS")?.Id ?? Guid.Empty;
 
             var files = new[]
             {
-                new FileModel
+                new FilePersistence
                 {
                     Id = Guid.NewGuid(),
                     Name = "CoasterAndBargelLoading",
@@ -70,7 +70,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                new FileModel
+                new FilePersistence
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices",
@@ -85,7 +85,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                new FileModel
+                new FilePersistence
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices2016",
@@ -100,7 +100,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
-                new FileModel
+                new FilePersistence
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices2017",

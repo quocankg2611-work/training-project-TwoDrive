@@ -4,9 +4,9 @@ using TwoDrive.Persistence.Models;
 
 namespace TwoDrive.Persistence.Configs
 {
-    internal class FileConfiguration : IEntityTypeConfiguration<FileModel>
+    internal class FileConfiguration : IEntityTypeConfiguration<FilePersistence>
     {
-        public void Configure(EntityTypeBuilder<FileModel> builder)
+        public void Configure(EntityTypeBuilder<FilePersistence> builder)
         {
             builder.ToTable("Files");
 
@@ -15,7 +15,7 @@ namespace TwoDrive.Persistence.Configs
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
 
             builder.Property(x => x.FolderId)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.OwnerId)
                 .IsRequired();

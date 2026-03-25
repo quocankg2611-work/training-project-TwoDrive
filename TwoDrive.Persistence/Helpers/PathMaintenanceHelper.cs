@@ -12,7 +12,7 @@ internal class PathMaintenanceHelper
         _dbContext = dbContext;
     }
 
-    public async Task SetFolderPathAsync(FolderModel folder, CancellationToken cancellationToken = default)
+    public async Task SetFolderPathAsync(FolderPersistence folder, CancellationToken cancellationToken = default)
     {
         if (folder.Id == Guid.Empty)
         {
@@ -33,7 +33,7 @@ internal class PathMaintenanceHelper
         folder.Path = $"{parentPath}.{folder.Id}";
     }
 
-    public async Task SetFilePathAsync(FileModel file, CancellationToken cancellationToken = default)
+    public async Task SetFilePathAsync(FilePersistence file, CancellationToken cancellationToken = default)
     {
         if (file.Id == Guid.Empty)
         {

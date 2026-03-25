@@ -2,35 +2,37 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using TwoDrive.Common;
 using TwoDrive.Services.Common;
-using TwoDrive.Services.Folders;
+using TwoDrive.Services.Files;
 
 namespace TwoDrive.Api.Endpoints;
 
-public sealed class UpdateFolderRequest
+public sealed class UpdateFileRequest
 {
     [Required]
-    public Guid? FolderId { get; init; }
+    public Guid? FileId { get; init; }
+    [Required]
     [StringLength(255, MinimumLength = 1)]
     public string? NewName { get; init; }
 }
 
-public sealed class UpdateFolderEndpoint : IEndpoint
+
+public sealed class UpdateFileEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("/folders", HandleAsync)
-            .WithName("UpdateFolder")
-            .WithTags("Folders");
+        app.MapPut("/files", HandleAsync)
+            .WithName("UpdateFile")
+            .WithTags("Files");
     }
 
-    private static async Task<IResult> HandleAsync([FromBody] UpdateFolderRequest request, [FromServices] ICommandHandler<UpdateFolderCommand> handler)
+    private static async Task<IResult> HandleAsync([FromBody] UpdateFileRequest request, [FromServices] ICommandHandler<UpdateFileCommand> handler)
     {
         try
         {
-            await handler.Handle(new UpdateFolderCommand
+            await handler.Handle(new UpdateFileCommand
             {
-                FolderId = request.FolderId!.Value,
-                NewName = request.NewName,
+                FileId = request.FileId!.Value,
+                NewName = request.NewName
             });
 
             return Results.Ok();

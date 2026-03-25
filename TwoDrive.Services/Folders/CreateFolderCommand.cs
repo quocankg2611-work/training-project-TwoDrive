@@ -1,5 +1,7 @@
-using TwoDrive.Services.Common;
+using TwoDrive.Core.Helper;
+using TwoDrive.Core.Models;
 using TwoDrive.Services.__Persistence__;
+using TwoDrive.Services.Common;
 
 namespace TwoDrive.Services.Folders;
 
@@ -11,17 +13,29 @@ public class CreateFolderCommand : ICommand
 
 public record CreateFolderCommandResult(Guid FolderId);
 
-internal class CreateFolderCommandHandler : ICommandHandler<CreateFolderCommand, CreateFolderCommandResult>
+internal class CreateFolderCommandHandler(
+    IFoldersRepository foldersRepository,
+    IUnitOfWork unitOfWork
+    ) : ICommandHandler<CreateFolderCommand, CreateFolderCommandResult>
 {
-    private readonly IFoldersRepository _foldersRepository;
-
-    public CreateFolderCommandHandler(IFoldersRepository foldersRepository)
+    public async Task<CreateFolderCommandResult> Handle(CreateFolderCommand command)
     {
-        _foldersRepository = foldersRepository;
-    }
+        var parentFolder = command.ParentFolderId.HasValue
+            ? await foldersRepository.GetByIdAsync(command.ParentFolderId.Value)
+            : null;
 
-    public Task<CreateFolderCommandResult> Handle(CreateFolderCommand command)
-    {
-        return _foldersRepository.CreateAsync(command);
+
+        var folderModel = new FolderModel
+        {
+            Id = Guid.NewGuid(),
+            Name = command.Name,
+            OwnerId = MockUtils.MOCK_USER_ID,
+            Path = parentFolder?.PathForChildren ?? "/",
+            ParentFolderId = parentFolder?.Id,
+        };
+
+        var folderId = await foldersRepository.CreateAsync(folderModel);
+        await unitOfWork.SaveChangesAsync();
+        return new CreateFolderCommandResult(folderId);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TwoDrive.Persistence;
 
@@ -11,9 +12,11 @@ using TwoDrive.Persistence;
 namespace TwoDrive.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325053358_FolderId")]
+    partial class FolderId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,7 +44,7 @@ namespace TwoDrive.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("FolderId")
+                    b.Property<Guid>("FolderId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MimeType")
@@ -129,7 +132,8 @@ namespace TwoDrive.Persistence.Migrations
                     b.HasOne("TwoDrive.Persistence.Models.FolderPersistence", "Folder")
                         .WithMany("Files")
                         .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Folder");
                 });

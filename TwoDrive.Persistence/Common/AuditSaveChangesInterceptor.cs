@@ -30,7 +30,7 @@ internal sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
 
         var utcNow = DateTime.UtcNow;
 
-        foreach (var entry in context.ChangeTracker.Entries<FolderModel>())
+        foreach (var entry in context.ChangeTracker.Entries<FolderPersistence>())
         {
             if (entry.State == EntityState.Added)
             {
@@ -43,7 +43,7 @@ internal sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
             }
         }
 
-        foreach (var entry in context.ChangeTracker.Entries<FileModel>())
+        foreach (var entry in context.ChangeTracker.Entries<FilePersistence>())
         {
             if (entry.State == EntityState.Added)
             {

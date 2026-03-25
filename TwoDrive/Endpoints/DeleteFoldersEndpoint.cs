@@ -6,31 +6,29 @@ using TwoDrive.Services.Folders;
 
 namespace TwoDrive.Api.Endpoints;
 
-public sealed class UpdateFolderRequest
+public sealed class DeleteFoldersRequest
 {
     [Required]
-    public Guid? FolderId { get; init; }
-    [StringLength(255, MinimumLength = 1)]
-    public string? NewName { get; init; }
+    [MinLength(1)]
+    public Guid[]? FolderIds { get; init; }
 }
 
-public sealed class UpdateFolderEndpoint : IEndpoint
+public sealed class DeleteFoldersEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("/folders", HandleAsync)
-            .WithName("UpdateFolder")
+        app.MapDelete("/folders", HandleAsync)
+            .WithName("DeleteFolders")
             .WithTags("Folders");
     }
 
-    private static async Task<IResult> HandleAsync([FromBody] UpdateFolderRequest request, [FromServices] ICommandHandler<UpdateFolderCommand> handler)
+    private static async Task<IResult> HandleAsync([FromBody] DeleteFoldersRequest request, [FromServices] ICommandHandler<DeleteFoldersCommand> handler)
     {
         try
         {
-            await handler.Handle(new UpdateFolderCommand
+            await handler.Handle(new DeleteFoldersCommand
             {
-                FolderId = request.FolderId!.Value,
-                NewName = request.NewName,
+                FolderIds = request.FolderIds!
             });
 
             return Results.Ok();
@@ -45,3 +43,4 @@ public sealed class UpdateFolderEndpoint : IEndpoint
         }
     }
 }
+

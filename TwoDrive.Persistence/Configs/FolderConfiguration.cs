@@ -4,9 +4,9 @@ using TwoDrive.Persistence.Models;
 
 namespace TwoDrive.Persistence.Configs
 {
-    internal class FolderConfiguration : IEntityTypeConfiguration<FolderModel>
+    internal class FolderConfiguration : IEntityTypeConfiguration<FolderPersistence>
     {
-        public void Configure(EntityTypeBuilder<FolderModel> builder)
+        public void Configure(EntityTypeBuilder<FolderPersistence> builder)
         {
             builder.ToTable("Folders");
 

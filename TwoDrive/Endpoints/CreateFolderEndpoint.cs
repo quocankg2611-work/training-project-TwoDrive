@@ -4,7 +4,7 @@ using TwoDrive.Common;
 using TwoDrive.Services.Common;
 using TwoDrive.Services.Folders;
 
-namespace TwoDrive.Endpoints;
+namespace TwoDrive.Api.Endpoints;
 
 public sealed class CreateFolderEndpoint : IEndpoint
 {
@@ -15,7 +15,7 @@ public sealed class CreateFolderEndpoint : IEndpoint
             .WithTags("Folders");
     }
 
-    private static async Task<IResult> HandleAsync([FromBody] Request request, [FromServices] ICommandHandler<CreateFolderCommand, CreateFolderCommandResult> handler)
+    private static async Task<IResult> HandleAsync([FromBody] CreateFolderRequest request, [FromServices] ICommandHandler<CreateFolderCommand, CreateFolderCommandResult> handler)
     {
         try
         {
@@ -25,7 +25,7 @@ public sealed class CreateFolderEndpoint : IEndpoint
                 Name = request.Name!
             });
 
-            var response = new Response(result.FolderId);
+            var response = new CreateFolderResponse(result.FolderId);
             return Results.Created($"/folders/{result.FolderId}", response);
         }
         catch (KeyNotFoundException ex)
@@ -33,15 +33,15 @@ public sealed class CreateFolderEndpoint : IEndpoint
             return Results.NotFound(new { message = ex.Message });
         }
     }
-
-    public sealed class Request
-    {
-        public Guid? ParentFolderId { get; init; }
-
-        [Required]
-        [StringLength(255, MinimumLength = 1)]
-        public string? Name { get; init; }
-    }
-
-    public sealed record Response(Guid FolderId);
 }
+
+public sealed class CreateFolderRequest
+{
+    public Guid? ParentFolderId { get; init; }
+
+    [Required]
+    [StringLength(255, MinimumLength = 1)]
+    public string? Name { get; init; }
+}
+
+public sealed record CreateFolderResponse(Guid FolderId);

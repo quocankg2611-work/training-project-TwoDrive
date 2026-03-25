@@ -1,11 +1,10 @@
-using TwoDrive.Services.Files;
+using TwoDrive.Core.Models;
 
 namespace TwoDrive.Services.__Persistence__;
 
-public interface IFilesRepository
+public interface IFilesRepository : IRepository
 {
-    Task<FileDetailsDto?> GetByIdAsync(Guid fileId);
-    Task DeleteAsync(Guid fileId);
-    Task<UploadFileCommandResult> UploadAsync(UploadFileCommand command);
-    Task UploadFilesAsync(UploadFilesCommand command);
+    Task CreateAsync(FileModel file);
+    Task UpdateAsync(FileModel file);
+    Task DeleteAsync(Guid id);
 }

@@ -5,8 +5,8 @@ namespace TwoDrive.Persistence
 {
     internal class AppDbContext : DbContext
     {
-        public DbSet<FolderModel> Folders => Set<FolderModel>();
-        public DbSet<FileModel> Files => Set<FileModel>();
+        public DbSet<FolderPersistence> Folders => Set<FolderPersistence>();
+        public DbSet<FilePersistence> Files => Set<FilePersistence>();
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {

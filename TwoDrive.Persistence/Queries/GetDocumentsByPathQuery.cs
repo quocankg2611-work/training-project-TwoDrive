@@ -1,21 +1,30 @@
 using Microsoft.EntityFrameworkCore;
+using TwoDrive.Core.Models;
 using TwoDrive.Services.Common;
-using TwoDrive.Services.Documents;
-using TwoDrive.Services.__Persistence__;
 
-namespace TwoDrive.Persistence.Repositories;
+namespace TwoDrive.Persistence.Queries;
 
-internal class DocumentsRepository : IDocumentsRepository
+public class GetDocumentsByPathQuery : IQuery<IEnumerable<GetDocumentsQueryResultItem>>
 {
-    private readonly AppDbContext _dbContext;
+    public string Path { get; set; } = null!;
+}
 
-    public DocumentsRepository(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+public record GetDocumentsQueryResultItem(
+    Guid Id,
+    string Name,
+    string Path,
+    string DocumentType,
+    string? FileType,
+    string ModifiedBy,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+    );
 
-    public async Task<IEnumerable<GetDocumentsQueryResultItem>> GetByPathAsync(string path)
+internal class GetDocumentsByPathQueryHandler(AppDbContext _dbContext) : IQueryHandler<GetDocumentsByPathQuery, IEnumerable<GetDocumentsQueryResultItem>>
+{
+    public async Task<IEnumerable<GetDocumentsQueryResultItem>> Handle(GetDocumentsByPathQuery query)
     {
+        var path = query.Path;
         var folders = await _dbContext.Folders
             .AsNoTracking()
             .Where(x => x.Path == path)

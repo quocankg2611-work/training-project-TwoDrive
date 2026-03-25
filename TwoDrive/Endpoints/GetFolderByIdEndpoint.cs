@@ -1,10 +1,18 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using TwoDrive.Common;
+using TwoDrive.Persistence.Queries;
 using TwoDrive.Services.Common;
-using TwoDrive.Services.Folders;
 
-namespace TwoDrive.Endpoints;
+namespace TwoDrive.Api.Endpoints;
+
+public sealed record GetFolderByIdResponse(
+    Guid Id,
+    Guid? ParentFolderId,
+    string Name,
+    string Path,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+    );
 
 public sealed class GetFolderByIdEndpoint : IEndpoint
 {
@@ -15,12 +23,12 @@ public sealed class GetFolderByIdEndpoint : IEndpoint
             .WithTags("Folders");
     }
 
-    private static async Task<IResult> HandleAsync([AsParameters] Request request, [FromServices] IQueryHandler<GetFolderByIdQuery, FolderDetailsDto> handler)
+    private static async Task<IResult> HandleAsync([FromRoute] Guid FolderId, [FromServices] IQueryHandler<GetFolderByIdQuery, FolderDetailsDto> handler)
     {
         try
         {
-            var folder = await handler.Handle(new GetFolderByIdQuery { FolderId = request.FolderId!.Value });
-            var response = new Response(
+            var folder = await handler.Handle(new GetFolderByIdQuery { FolderId = FolderId });
+            var response = new GetFolderByIdResponse(
                 folder.Id,
                 folder.ParentFolderId,
                 folder.Name,
@@ -35,18 +43,5 @@ public sealed class GetFolderByIdEndpoint : IEndpoint
             return Results.NotFound(new { message = ex.Message });
         }
     }
-
-    public sealed class Request
-    {
-        [Required]
-        public Guid? FolderId { get; init; }
-    }
-
-    private sealed record Response(
-        Guid Id,
-        Guid? ParentFolderId,
-        string Name,
-        string Path,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
 }
+
