@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TwoDrive.Persistence.Common;
 using TwoDrive.Persistence.Helpers;
 using TwoDrive.Services.Common;
+using TwoDrive.Services.__Persistence__;
 
 namespace TwoDrive.Persistence
 {
@@ -26,6 +27,15 @@ namespace TwoDrive.Persistence
 
             services.Scan(scan => scan
                 .FromAssemblies(typeof(DependencyInjection).Assembly)
+                .AddClasses(classes => classes.AssignableToAny(
+                    typeof(IDocumentsRepository),
+                    typeof(IFoldersRepository),
+                    typeof(IFilesRepository)), publicOnly: false)
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+
+            services.Scan(scan => scan
+                .FromAssemblies(typeof(ICommand).Assembly)
                 .AddClasses(classes => classes.AssignableToAny(
                     typeof(ICommandHandler<>),
                     typeof(ICommandHandler<,>),

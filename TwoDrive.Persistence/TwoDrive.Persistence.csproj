@@ -24,4 +24,8 @@
     <ProjectReference Include="..\TwoDrive.Services\TwoDrive.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Files\" />
+  </ItemGroup>
+
 </Project>

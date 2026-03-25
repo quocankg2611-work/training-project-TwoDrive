@@ -1,4 +1,5 @@
 using TwoDrive.Services.Common;
+using TwoDrive.Services.__Persistence__;
 
 namespace TwoDrive.Services.Documents;
 
@@ -17,3 +18,18 @@ public record GetDocumentsQueryResultItem(
     DateTime CreatedAt,
     DateTime UpdatedAt
     );
+
+internal class GetDocumentsByPathQueryHandler : IQueryHandler<GetDocumentsByPathQuery, IEnumerable<GetDocumentsQueryResultItem>>
+{
+    private readonly IDocumentsRepository _documentsRepository;
+
+    public GetDocumentsByPathQueryHandler(IDocumentsRepository documentsRepository)
+    {
+        _documentsRepository = documentsRepository;
+    }
+
+    public Task<IEnumerable<GetDocumentsQueryResultItem>> Handle(GetDocumentsByPathQuery query)
+    {
+        return _documentsRepository.GetByPathAsync(query.Path);
+    }
+}

@@ -1,4 +1,5 @@
 using TwoDrive.Services.Common;
+using TwoDrive.Services.__Persistence__;
 
 namespace TwoDrive.Services.Files;
 
@@ -12,3 +13,18 @@ public class UploadFileCommand : ICommand
 }
 
 public record UploadFileCommandResult(Guid FileId, string StorageKey);
+
+internal class UploadFileCommandHandler : ICommandHandler<UploadFileCommand, UploadFileCommandResult>
+{
+    private readonly IFilesRepository _filesRepository;
+
+    public UploadFileCommandHandler(IFilesRepository filesRepository)
+    {
+        _filesRepository = filesRepository;
+    }
+
+    public Task<UploadFileCommandResult> Handle(UploadFileCommand command)
+    {
+        return _filesRepository.UploadAsync(command);
+    }
+}

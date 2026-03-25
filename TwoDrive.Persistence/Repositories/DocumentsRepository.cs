@@ -1,23 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using TwoDrive.Services.Common;
 using TwoDrive.Services.Documents;
+using TwoDrive.Services.__Persistence__;
 
-namespace TwoDrive.Persistence.Services.Documents;
+namespace TwoDrive.Persistence.Repositories;
 
-internal class GetDocumentsByPathQueryHandler : IQueryHandler<GetDocumentsByPathQuery, IEnumerable<GetDocumentsQueryResultItem>>
+internal class DocumentsRepository : IDocumentsRepository
 {
     private readonly AppDbContext _dbContext;
 
-    public GetDocumentsByPathQueryHandler(AppDbContext dbContext)
+    public DocumentsRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<GetDocumentsQueryResultItem>> Handle(GetDocumentsByPathQuery query)
+    public async Task<IEnumerable<GetDocumentsQueryResultItem>> GetByPathAsync(string path)
     {
         var folders = await _dbContext.Folders
             .AsNoTracking()
-            .Where(x => x.Path == query.Path)
+            .Where(x => x.Path == path)
             .Select(x => new GetDocumentsQueryResultItem(
                 x.Id,
                 x.Name,
@@ -31,7 +32,7 @@ internal class GetDocumentsByPathQueryHandler : IQueryHandler<GetDocumentsByPath
 
         var files = await _dbContext.Files
             .AsNoTracking()
-            .Where(x => x.Path == query.Path)
+            .Where(x => x.Path == path)
             .Select(x => new GetDocumentsQueryResultItem(
                 x.Id,
                 x.Name,

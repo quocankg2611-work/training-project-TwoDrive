@@ -1,19 +1,95 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TwoDrive.Core;
 using TwoDrive.Core.Helper;
+using TwoDrive.Persistence.Helpers;
 using TwoDrive.Persistence.Models;
-using TwoDrive.Services.__Services__;
-using TwoDrive.Services.Common;
 using TwoDrive.Services.Files;
+using TwoDrive.Services.__Persistence__;
+using TwoDrive.Services.__Services__;
 
-namespace TwoDrive.Persistence.Services.Files;
+namespace TwoDrive.Persistence.Repositories;
 
-internal class UploadFilesCommandHandler(
-    AppDbContext dbContext,
-    IFileStorageService fileStorageService
-    ) : ICommandHandler<UploadFilesCommand>
+internal class FilesRepository : IFilesRepository
 {
-    public async Task Handle(UploadFilesCommand command)
+    private readonly AppDbContext _dbContext;
+    private readonly PathMaintenanceHelper _pathMaintenanceHelper;
+    private readonly IFileStorageService _fileStorageService;
+
+    public FilesRepository(
+        AppDbContext dbContext,
+        PathMaintenanceHelper pathMaintenanceService,
+        IFileStorageService fileStorageService)
+    {
+        _dbContext = dbContext;
+        _pathMaintenanceHelper = pathMaintenanceService;
+        _fileStorageService = fileStorageService;
+    }
+
+    public async Task<FileDetailsDto?> GetByIdAsync(Guid fileId)
+    {
+        return await _dbContext.Files
+            .AsNoTracking()
+            .Where(x => x.Id == fileId)
+            .Select(x => new FileDetailsDto(
+                x.Id,
+                x.FolderId,
+                x.Name,
+                x.MimeType,
+                x.SizeBytes,
+                x.StorageKey,
+                x.Checksum,
+                x.CreatedAt,
+                x.UpdatedAt))
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task DeleteAsync(Guid fileId)
+    {
+        var file = await _dbContext.Files.SingleOrDefaultAsync(x => x.Id == fileId);
+
+        if (file is null)
+        {
+            throw new KeyNotFoundException($"File '{fileId}' was not found.");
+        }
+
+        _dbContext.Files.Remove(file);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<UploadFileCommandResult> UploadAsync(UploadFileCommand command)
+    {
+        var folderOwnerId = await _dbContext.Folders
+            .Where(x => x.Id == command.FolderId)
+            .Select(x => (Guid?)x.OwnerId)
+            .SingleOrDefaultAsync();
+
+        if (folderOwnerId is null)
+        {
+            throw new KeyNotFoundException($"Folder '{command.FolderId}' was not found.");
+        }
+
+        var storageKey = $"{command.FolderId:N}/{Guid.NewGuid():N}";
+
+        var file = new FileModel
+        {
+            FolderId = command.FolderId,
+            OwnerId = folderOwnerId.Value,
+            Name = command.FileName,
+            MimeType = command.MimeType,
+            SizeBytes = command.FileSizeBytes,
+            StorageKey = storageKey,
+            Checksum = string.Empty
+        };
+
+        await _pathMaintenanceHelper.SetFilePathAsync(file);
+
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
+        return new UploadFileCommandResult(file.Id, file.StorageKey);
+    }
+
+    public async Task UploadFilesAsync(UploadFilesCommand command)
     {
         var persistMetadataTasks = command.FilesData.Select(fileData => PersistSingleFileMetadataAsync(command.BasePath, fileData));
         var uploadFileTask = UploadFileAsync(command);
@@ -38,9 +114,9 @@ internal class UploadFilesCommandHandler(
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
         };
-        dbContext.Folders.AddRange(folderModels);
-        dbContext.Files.Add(fileModel);
-        await dbContext.SaveChangesAsync();
+        _dbContext.Folders.AddRange(folderModels);
+        _dbContext.Files.Add(fileModel);
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task<IList<FolderModel>> GetFoldersToCreateAsync(string basePath, string filePath)
@@ -53,16 +129,14 @@ internal class UploadFilesCommandHandler(
             var parentParts = pathParts.Take(i - 1).ToArray();
             var parentPath = PathUtils.CombinePath(parentParts);
             var parentPathName = pathParts.ElementAt(i);
-            var parentFolder = await dbContext.Folders
+            var parentFolder = await _dbContext.Folders
                 .AsNoTracking()
                 .FirstOrDefaultAsync(f => f.Path == parentPath && f.Name == parentPathName);
 
-            // Found parent folder, stop creating
             if (parentFolder != null)
             {
                 break;
             }
-            // Not found, create new parent folder and continue to find next parent
             else
             {
                 var newParentFolder = new FolderModel
@@ -90,10 +164,9 @@ internal class UploadFilesCommandHandler(
                 ContentType: data.MimeType,
                 Progress: (progress) =>
                 {
-                    // You can implement progress tracking logic here, e.g., update a database record or send progress updates to clients
                     Console.WriteLine($"Uploading {data.FileName}: {progress} bytes uploaded.");
                 })
         );
-        await fileStorageService.UploadBulkAsync(uploadDtos, CancellationToken.None);
+        await _fileStorageService.UploadBulkAsync(uploadDtos, CancellationToken.None);
     }
 }
