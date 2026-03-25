@@ -9,12 +9,12 @@ using TwoDrive.Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// Azure AD config
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Azure blob storage
 builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnectionString:blobServiceUri"]!);
@@ -34,6 +34,18 @@ builder.Services.AddValidation();
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 builder.Services.AddOpenApi();
 
+string allowDevFrontendPolicy = "AllowDevFrontend";
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy(allowDevFrontendPolicy,
+		policy =>
+		{
+			policy.WithOrigins("http://localhost:5500")
+				  .AllowAnyHeader()
+				  .AllowAnyMethod();
+		});
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -44,6 +56,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(allowDevFrontendPolicy);
 
 app.UseAuthentication();
 
