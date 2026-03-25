@@ -20,28 +20,18 @@ public sealed class UpdateFolderEndpoint : IEndpoint
     {
         app.MapPut("/folders", HandleAsync)
             .WithName("UpdateFolder")
-            .WithTags("Folders");
+            .WithTags("Folders")
+            .Produces(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([FromBody] UpdateFolderRequest request, [FromServices] ICommandHandler<UpdateFolderCommand> handler)
     {
-        try
+        await handler.Handle(new UpdateFolderCommand
         {
-            await handler.Handle(new UpdateFolderCommand
-            {
-                FolderId = request.FolderId!.Value,
-                NewName = request.NewName,
-            });
+            FolderId = request.FolderId!.Value,
+            NewName = request.NewName,
+        });
 
-            return Results.Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Ok();
     }
 }

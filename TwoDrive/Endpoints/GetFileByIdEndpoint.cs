@@ -22,30 +22,24 @@ public sealed class GetFileByIdEndpoint : IEndpoint
     {
         app.MapGet("/files/{fileId:guid}", HandleAsync)
             .WithName("GetFileById")
-            .WithTags("Files");
+            .WithTags("Files")
+            .Produces<GetFileByIdResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([FromRoute] Guid fileId, [FromServices] IQueryHandler<GetFileByIdQuery, FileDetailsDto> handler)
     {
-        try
-        {
-            var file = await handler.Handle(new GetFileByIdQuery { FileId = fileId });
-            var response = new GetFileByIdResponse(
-                file.Id,
-                file.FolderId,
-                file.Name,
-                file.MimeType,
-                file.SizeBytes,
-                file.StorageKey,
-                file.Checksum,
-                file.CreatedAt,
-                file.UpdatedAt);
+        var file = await handler.Handle(new GetFileByIdQuery { FileId = fileId });
+        var response = new GetFileByIdResponse(
+            file.Id,
+            file.FolderId,
+            file.Name,
+            file.MimeType,
+            file.SizeBytes,
+            file.StorageKey,
+            file.Checksum,
+            file.CreatedAt,
+            file.UpdatedAt);
 
-            return Results.Ok(response);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
+        return Results.Ok(response);
     }
 }

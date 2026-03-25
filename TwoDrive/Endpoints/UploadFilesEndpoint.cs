@@ -34,6 +34,7 @@ public sealed class UploadFilesEndpoint : IEndpoint
             .WithName("UploadFiles")
             .Accepts<UploadFilesRequest>("multipart/form-data")
             .WithTags("Files")
+            .Produces(StatusCodes.Status200OK)
             .DisableAntiforgery() // CSRF disabled
             ;
     }
@@ -76,14 +77,6 @@ public sealed class UploadFilesEndpoint : IEndpoint
             });
 
             return Results.Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
         }
         finally
         {

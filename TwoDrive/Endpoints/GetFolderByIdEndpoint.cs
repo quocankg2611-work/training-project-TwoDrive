@@ -20,28 +20,22 @@ public sealed class GetFolderByIdEndpoint : IEndpoint
     {
         app.MapGet("/folders/{folderId:guid}", HandleAsync)
             .WithName("GetFolderById")
-            .WithTags("Folders");
+            .WithTags("Folders")
+            .Produces<GetFolderByIdResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([FromRoute] Guid FolderId, [FromServices] IQueryHandler<GetFolderByIdQuery, FolderDetailsDto> handler)
     {
-        try
-        {
-            var folder = await handler.Handle(new GetFolderByIdQuery { FolderId = FolderId });
-            var response = new GetFolderByIdResponse(
-                folder.Id,
-                folder.ParentFolderId,
-                folder.Name,
-                folder.Path,
-                folder.CreatedAt,
-                folder.UpdatedAt);
+        var folder = await handler.Handle(new GetFolderByIdQuery { FolderId = FolderId });
+        var response = new GetFolderByIdResponse(
+            folder.Id,
+            folder.ParentFolderId,
+            folder.Name,
+            folder.Path,
+            folder.CreatedAt,
+            folder.UpdatedAt);
 
-            return Results.Ok(response);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
+        return Results.Ok(response);
     }
 }
 

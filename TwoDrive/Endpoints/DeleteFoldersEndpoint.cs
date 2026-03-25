@@ -19,28 +19,18 @@ public sealed class DeleteFoldersEndpoint : IEndpoint
     {
         app.MapDelete("/folders", HandleAsync)
             .WithName("DeleteFolders")
-            .WithTags("Folders");
+            .WithTags("Folders")
+            .Produces(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([FromBody] DeleteFoldersRequest request, [FromServices] ICommandHandler<DeleteFoldersCommand> handler)
     {
-        try
+        await handler.Handle(new DeleteFoldersCommand
         {
-            await handler.Handle(new DeleteFoldersCommand
-            {
-                FolderIds = request.FolderIds!
-            });
+            FolderIds = request.FolderIds!
+        });
 
-            return Results.Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Ok();
     }
 }
 

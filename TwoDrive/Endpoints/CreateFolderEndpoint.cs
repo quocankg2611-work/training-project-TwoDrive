@@ -12,26 +12,21 @@ public sealed class CreateFolderEndpoint : IEndpoint
     {
         app.MapPost("/folders", HandleAsync)
             .WithName("CreateFolder")
-            .WithTags("Folders");
+            .WithTags("Folders")
+            .Produces<CreateFolderResponse>(StatusCodes.Status200OK)
+            ;
     }
 
     private static async Task<IResult> HandleAsync([FromBody] CreateFolderRequest request, [FromServices] ICommandHandler<CreateFolderCommand, CreateFolderCommandResult> handler)
     {
-        try
+        var result = await handler.Handle(new CreateFolderCommand
         {
-            var result = await handler.Handle(new CreateFolderCommand
-            {
-                ParentFolderId = request.ParentFolderId,
-                Name = request.Name!
-            });
+            ParentFolderId = request.ParentFolderId,
+            Name = request.Name!
+        });
 
-            var response = new CreateFolderResponse(result.FolderId);
-            return Results.Created($"/folders/{result.FolderId}", response);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
+        var response = new CreateFolderResponse(result.FolderId);
+        return Results.Created($"/folders/{result.FolderId}", response);
     }
 }
 

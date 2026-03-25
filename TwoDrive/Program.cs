@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Scalar.AspNetCore;
-using TwoDrive.Common;
 using TwoDrive.Persistence;
 using TwoDrive.Storage;
 using Microsoft.Extensions.Azure;
 using TwoDrive.Services;
+using TwoDrive.Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +48,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.MapEndpoints();
 

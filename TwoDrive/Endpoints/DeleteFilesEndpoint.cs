@@ -12,28 +12,18 @@ public sealed class DeleteFilesEndpoint : IEndpoint
     {
         app.MapDelete("/files", HandleAsync)
             .WithName("DeleteFiles")
-            .WithTags("Files");
+            .WithTags("Files")
+            .Produces(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([FromBody] DeleteFilesRequest request, [FromServices] ICommandHandler<DeleteFilesCommand> handler)
     {
-        try
+        await handler.Handle(new DeleteFilesCommand
         {
-            await handler.Handle(new DeleteFilesCommand
-            {
-                FileIds = request.FileIds!
-            });
+            FileIds = request.FileIds!
+        });
 
-            return Results.Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Ok();
     }
 }
 

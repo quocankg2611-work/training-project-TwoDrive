@@ -12,7 +12,8 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
     {
         app.MapGet("/documents", HandleAsync)
             .WithName("GetDocumentsByPath")
-            .WithTags("Documents");
+            .WithTags("Documents")
+            .Produces<GetDocumentsByPathResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> HandleAsync([AsParameters] Request request, [FromServices] IQueryHandler<GetDocumentsByPathQuery, IEnumerable<GetDocumentsQueryResultItem>> handler)

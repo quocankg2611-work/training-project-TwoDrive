@@ -22,28 +22,19 @@ public sealed class UpdateFileEndpoint : IEndpoint
     {
         app.MapPut("/files", HandleAsync)
             .WithName("UpdateFile")
-            .WithTags("Files");
+            .WithTags("Files")
+            .Produces(StatusCodes.Status200OK)
+            ;
     }
 
     private static async Task<IResult> HandleAsync([FromBody] UpdateFileRequest request, [FromServices] ICommandHandler<UpdateFileCommand> handler)
     {
-        try
+        await handler.Handle(new UpdateFileCommand
         {
-            await handler.Handle(new UpdateFileCommand
-            {
-                FileId = request.FileId!.Value,
-                NewName = request.NewName
-            });
+            FileId = request.FileId!.Value,
+            NewName = request.NewName
+        });
 
-            return Results.Ok();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return Results.NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Results.BadRequest(new { message = ex.Message });
-        }
+        return Results.Ok();
     }
 }

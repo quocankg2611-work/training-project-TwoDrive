@@ -1,7 +1,8 @@
 using System.Reflection;
-using TwoDrive.Endpoints;
+using Microsoft.AspNetCore.Mvc;
+using TwoDrive.Common;
 
-namespace TwoDrive.Common;
+namespace TwoDrive.Api.Common;
 
 public static class EndpointExtensions
 {
@@ -19,17 +20,18 @@ public static class EndpointExtensions
 
     public static WebApplication MapEndpoints(this WebApplication app)
     {
-        //var createFileEndpoint = app.Services.GetServices<IEndpoint>().FirstOrDefault(endpoint => endpoint is CreateFileEndpoint);
-        //createFileEndpoint?.MapEndpoint(app);
-
-
-
+        var endpointsGroup = app.MapGroup(string.Empty)
+            .WithMetadata(
+                new ProducesResponseTypeAttribute(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest),
+                new ProducesResponseTypeAttribute(typeof(ApiErrorResponse), StatusCodes.Status404NotFound),
+                new ProducesResponseTypeAttribute(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError));
 
         var endpoints = app.Services.GetServices<IEndpoint>();
         foreach (var endpoint in endpoints)
         {
-            endpoint.MapEndpoint(app);
+            endpoint.MapEndpoint(endpointsGroup);
         }
+
         return app;
     }
 }
