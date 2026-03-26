@@ -9,10 +9,11 @@ public interface IFoldersRepository : IRepository
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    Task<FolderModel?> FindByPathAsync(string path);
+    Task<FolderModel?> GetByPathAsync(string path);
     Task<FolderModel?> GetByIdAsync(Guid folderId);
+    Task<IEnumerable<FolderModel>> GetByIdsAsync(IEnumerable<Guid> folderIds);
     Task<Guid> CreateAsync(FolderModel folder);
     Task BulkCreateAsync(IEnumerable<FolderModel> folders);
     Task UpdateAsync(FolderModel folder);
-    Task DeleteAsync(Guid id);
+    Task BulkDeleteAsync(IEnumerable<Guid> ids);
 }

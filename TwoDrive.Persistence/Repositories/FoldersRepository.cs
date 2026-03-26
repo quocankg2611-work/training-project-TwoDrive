@@ -8,7 +8,7 @@ namespace TwoDrive.Persistence.Repositories;
 
 internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
 {
-    public async Task<FolderModel?> FindByPathAsync(string path)
+    public async Task<FolderModel?> GetByPathAsync(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || path == PathUtils.ROOT_PATH)
         {
@@ -28,6 +28,14 @@ internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
     {
         var folder = await dbContext.Folders.SingleOrDefaultAsync(x => x.Id == folderId);
         return folder is null ? null : ToModel(folder);
+    }
+
+    public async Task<IEnumerable<FolderModel>> GetByIdsAsync(IEnumerable<Guid> folderIds)
+    {
+        var folders = await dbContext.Folders
+            .Where(x => folderIds.Contains(x.Id))
+            .ToListAsync();
+        return folders.Select(ToModel);
     }
 
     public async Task<Guid> CreateAsync(FolderModel folder)
@@ -71,6 +79,14 @@ internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
         }
 
         dbContext.Folders.Remove(folder);
+    }
+
+    public async Task BulkDeleteAsync(IEnumerable<Guid> ids)
+    {
+        var folders = await dbContext.Folders
+            .Where(x => ids.Contains(x.Id))
+            .ToListAsync();
+        dbContext.Folders.RemoveRange(folders);
     }
 
     private static FolderModel ToModel(FolderPersistence folder)

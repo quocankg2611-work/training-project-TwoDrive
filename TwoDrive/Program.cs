@@ -34,6 +34,19 @@ builder.Services.AddValidation();
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 builder.Services.AddOpenApi();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(opt =>
+    {
+        opt.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+    });
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +58,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
@@ -55,4 +70,4 @@ app.MapEndpoints();
 
 app.Run();
 
-public partial class Program;
+

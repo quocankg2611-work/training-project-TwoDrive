@@ -1,4 +1,5 @@
-﻿using TwoDrive.Services.Common;
+﻿using TwoDrive.Services.__Persistence__;
+using TwoDrive.Services.Common;
 
 namespace TwoDrive.Services.Files;
 
@@ -8,10 +9,15 @@ public class UpdateFileCommand : ICommand
     public string? NewName { get; set; }
 }
 
-internal class UpdateFileCommandHandler : ICommandHandler<UpdateFileCommand>
+internal class UpdateFileCommandHandler (IFilesRepository filesRepository): ICommandHandler<UpdateFileCommand>
 {
-    public Task Handle(UpdateFileCommand command)
+    public async Task Handle(UpdateFileCommand command)
     {
-        throw new NotImplementedException();
+        var file = await filesRepository.GetByIdAsync(command.FileId);
+        if (file != null && command.NewName != null)
+        {
+            file.Name = command.NewName;
+            await filesRepository.UpdateAsync(file);
+        }
     }
 }

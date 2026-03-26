@@ -1,6 +1,7 @@
-using TwoDrive.Services.Common;
+using TwoDrive.Core;
 using TwoDrive.Services.__Persistence__;
 using TwoDrive.Services.__Services__;
+using TwoDrive.Services.Common;
 
 namespace TwoDrive.Services.Files;
 
@@ -14,8 +15,13 @@ internal class DeleteFilesCommandHandler(
     IFileStorageService fileStorageService
     ) : ICommandHandler<DeleteFilesCommand>
 {
-    public Task Handle(DeleteFilesCommand command)
+    public async Task Handle(DeleteFilesCommand command)
     {
-        throw new NotImplementedException();
+        var files = await filesRepository.GetByIdsAsync(command.FileIds);
+        var fileKeys = files.Select(f => f.StorageKey);
+
+        var persistenceTask = filesRepository.BulkDeleteAsync(command.FileIds);
+        var storageTask  = fileStorageService.DeleteBulkAsync(CoreConstants.CONTAINER_NAME_FILES, fileKeys);
+        await Task.WhenAll(persistenceTask, storageTask);
     }
 }

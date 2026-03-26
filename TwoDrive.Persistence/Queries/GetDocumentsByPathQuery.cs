@@ -47,7 +47,7 @@ internal class GetDocumentsByPathQueryHandler(AppDbContext _dbContext) : IQueryH
                 x.Name,
                 x.Path,
                 DocumentTypeEnum.File.ToDocumentTypeString(),
-                x.MimeType,
+                x.Extension,
                 x.OwnerId.ToString(),
                 x.CreatedAt,
                 x.UpdatedAt))

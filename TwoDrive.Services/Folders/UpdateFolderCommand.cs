@@ -11,8 +11,13 @@ public class UpdateFolderCommand : ICommand
 
 internal class UpdateFolderCommandHandler(IFoldersRepository foldersRepository) : ICommandHandler<UpdateFolderCommand>
 {
-    public Task Handle(UpdateFolderCommand command)
+    public async Task Handle(UpdateFolderCommand command)
     {
-        throw new NotImplementedException();
+        var folder = await foldersRepository.GetByIdAsync(command.FolderId) ?? throw new KeyNotFoundException($"Folder with key {command.FolderId} not found");
+        if (string.IsNullOrWhiteSpace(command.NewName) == false)
+        {
+            folder.Name = command.NewName;
+        }
+        await foldersRepository.UpdateAsync(folder);
     }
 }
