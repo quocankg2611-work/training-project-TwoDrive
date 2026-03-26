@@ -23,6 +23,7 @@ public sealed class UpdateFileEndpoint : IEndpoint
         app.MapPut("/files", HandleAsync)
             .WithName("UpdateFile")
             .WithTags("Files")
+            .RequireAuthorization()
             .Produces(StatusCodes.Status200OK)
             ;
     }

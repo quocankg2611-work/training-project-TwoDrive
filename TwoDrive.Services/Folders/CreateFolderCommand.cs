@@ -24,12 +24,10 @@ internal class CreateFolderCommandHandler(
             ? await foldersRepository.GetByIdAsync(command.ParentFolderId.Value)
             : null;
 
-
         var folderModel = new FolderModel
         {
             Id = Guid.NewGuid(),
             Name = command.Name,
-            OwnerId = MockUtils.MOCK_USER_ID,
             Path = parentFolder?.PathForChildren ?? "/",
             ParentFolderId = parentFolder?.Id,
         };

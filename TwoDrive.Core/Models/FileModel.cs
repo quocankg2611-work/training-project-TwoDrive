@@ -4,7 +4,6 @@
     {
         public Guid Id { get; set; }
         public Guid? FolderId { get; set; }
-        public Guid OwnerId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Extension { get; set; } = string.Empty;
         public string Path { get; set; } = string.Empty;

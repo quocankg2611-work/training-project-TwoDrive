@@ -72,7 +72,6 @@ internal class UploadFilesCommandHandler(
             SizeBytes = fileData.FileSizeBytes,
             FolderId = parentFolder?.Id,
             Path = parentFolder?.PathForChildren ?? CoreConstants.ROOT_PATH,
-            OwnerId = MockUtils.MOCK_USER_ID,
             Checksum = string.Empty,
             StorageKey = storageKey,
         };
@@ -117,7 +116,6 @@ internal class UploadFilesCommandHandler(
                     Id = Guid.NewGuid(),
                     Name = parentPathName,
                     Path = parentPath,
-                    OwnerId = MockUtils.MOCK_USER_ID,
                     ParentFolderId = null,
                 };
                 foldersToCreate.Add(newParentFolder);

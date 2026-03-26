@@ -4,7 +4,7 @@ using TwoDrive.Persistence.Models;
 
 namespace TwoDrive.Persistence.Configs
 {
-    internal class FileConfiguration : IEntityTypeConfiguration<FilePersistence>
+    internal class FileConfiguration : AuditPersistenceBaseConfig<FilePersistence>, IEntityTypeConfiguration<FilePersistence>
     {
         public void Configure(EntityTypeBuilder<FilePersistence> builder)
         {
@@ -16,9 +16,6 @@ namespace TwoDrive.Persistence.Configs
 
             builder.Property(x => x.FolderId)
                 .IsRequired(false);
-
-            builder.Property(x => x.OwnerId)
-                .IsRequired();
 
             builder.Property(x => x.Name)
                 .HasMaxLength(255)
@@ -43,15 +40,11 @@ namespace TwoDrive.Persistence.Configs
                 .HasMaxLength(64)
                 .IsRequired();
 
-            builder.Property(x => x.CreatedAt)
-                .IsRequired();
-
-            builder.Property(x => x.UpdatedAt)
-                .IsRequired();
+            ConfigureAudit(builder);
 
             builder.HasIndex(x => x.Path);
             builder.HasIndex(x => x.FolderId);
-            builder.HasIndex(x => x.OwnerId);
+            builder.HasIndex(x => x.CreatedByUserId);
 
             builder.HasOne(x => x.Folder)
                 .WithMany(x => x.Files)

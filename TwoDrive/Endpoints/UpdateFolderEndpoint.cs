@@ -21,6 +21,7 @@ public sealed class UpdateFolderEndpoint : IEndpoint
         app.MapPut("/folders", HandleAsync)
             .WithName("UpdateFolder")
             .WithTags("Folders")
+            .RequireAuthorization()
             .Produces(StatusCodes.Status200OK);
     }
 

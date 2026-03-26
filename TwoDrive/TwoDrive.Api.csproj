@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TwoDrive.Http\TwoDrive.Http.csproj" />
     <ProjectReference Include="..\TwoDrive.Persistence\TwoDrive.Persistence.csproj" />
     <ProjectReference Include="..\TwoDrive.Storage\TwoDrive.Storage.csproj" />
   </ItemGroup>

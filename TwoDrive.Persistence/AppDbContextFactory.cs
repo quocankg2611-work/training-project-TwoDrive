@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using TwoDrive.Core;
 using TwoDrive.Persistence.Models;
 
 namespace TwoDrive.Persistence;
@@ -29,6 +30,11 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         return new AppDbContext(optionsBuilder.Options);
     }
 
+
+    /// <summary>
+    /// NOTE: This seed will fail if data base is not re-created
+    /// </summary>
+    /// <param name="dbContext"></param>
     private static void SeedData(DbContext dbContext)
     {
         // Seed Folders
@@ -39,7 +45,10 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 Id = Guid.NewGuid(),
                 Name = "CAS",
                 Path = "/",
-                OwnerId = Guid.Empty,
+                CreatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                CreatedByUserNameSnapshot = "Megan Bowel",
+                UpdatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                UpdatedByUserNameSnapshot = "Megan Bowel",
                 CreatedAt = new DateTime(2025, 4, 30),
                 UpdatedAt = new DateTime(2025, 4, 30)
             };
@@ -63,7 +72,10 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     FolderId = rootFolderId,
-                    OwnerId = Guid.Empty,
+                    CreatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    CreatedByUserNameSnapshot = "Megan Bowel",
+                    UpdatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    UpdatedByUserNameSnapshot = "Megan Bowel",
                     SizeBytes = 0,
                     StorageKey = string.Empty,
                     Checksum = string.Empty,
@@ -78,7 +90,10 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,
-                    OwnerId = Guid.Empty,
+                    CreatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    CreatedByUserNameSnapshot = "Megan Bowel",
+                    UpdatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    UpdatedByUserNameSnapshot = "Megan Bowel",
                     SizeBytes = 0,
                     StorageKey = string.Empty,
                     Checksum = string.Empty,
@@ -93,7 +108,10 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,
-                    OwnerId = Guid.Empty,
+                    CreatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    CreatedByUserNameSnapshot = "Megan Bowel",
+                    UpdatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    UpdatedByUserNameSnapshot = "Megan Bowel",
                     SizeBytes = 0,
                     StorageKey = string.Empty,
                     Checksum = string.Empty,
@@ -108,7 +126,10 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,
-                    OwnerId = Guid.Empty,
+                    CreatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    CreatedByUserNameSnapshot = "Megan Bowel",
+                    UpdatedByUserId = CoreConstants.DEFAULT_USER_ID,
+                    UpdatedByUserNameSnapshot = "Megan Bowel",
                     SizeBytes = 0,
                     StorageKey = string.Empty,
                     Checksum = string.Empty,

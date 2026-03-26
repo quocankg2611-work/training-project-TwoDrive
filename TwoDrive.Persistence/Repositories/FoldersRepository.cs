@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using TwoDrive.Core;
 using TwoDrive.Core.Helper;
 using TwoDrive.Core.Models;
 using TwoDrive.Persistence.Models;
 using TwoDrive.Services.__Persistence__;
+using TwoDrive.Services.__Services__;
 
 namespace TwoDrive.Persistence.Repositories;
 
-internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
+internal class FoldersRepository(AppDbContext dbContext, ICurrentUserService currentUserService) : IFoldersRepository
 {
     public async Task<FolderModel?> GetByPathAsync(string path)
     {
@@ -41,14 +43,20 @@ internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
     public async Task<Guid> CreateAsync(FolderModel folder)
     {
         var folderPersistence = ToPersistence(folder);
-        await dbContext.Folders.AddAsync(folderPersistence);
+        folderPersistence.SetAuditFieldsOnCreated(currentUserService);
 
+        await dbContext.Folders.AddAsync(folderPersistence);
         return folderPersistence.Id;
     }
 
     public async Task BulkCreateAsync(IEnumerable<FolderModel> folders)
     {
-        var folderPersistences = folders.Select(ToPersistence);
+        var folderPersistences = folders.Select(folder =>
+        {
+            var persistence = ToPersistence(folder);
+            persistence.SetAuditFieldsOnCreated(currentUserService);
+            return persistence;
+        });
         await dbContext.Folders.AddRangeAsync(folderPersistences);
     }
 
@@ -63,22 +71,10 @@ internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
         }
 
         existingFolder.ParentFolderId = folder.ParentFolderId;
-        existingFolder.OwnerId = folder.OwnerId;
         existingFolder.Name = folder.Name;
         existingFolder.Path = folder.Path;
-    }
 
-    public async Task DeleteAsync(Guid id)
-    {
-        var folder = await dbContext.Folders
-            .SingleOrDefaultAsync(x => x.Id == id);
-
-        if (folder is null)
-        {
-            throw new KeyNotFoundException($"Folder '{id}' was not found.");
-        }
-
-        dbContext.Folders.Remove(folder);
+        existingFolder.SetAuditFieldsOnUpdated(currentUserService);
     }
 
     public async Task BulkDeleteAsync(IEnumerable<Guid> ids)
@@ -95,19 +91,16 @@ internal class FoldersRepository(AppDbContext dbContext) : IFoldersRepository
         {
             Id = folder.Id,
             ParentFolderId = folder.ParentFolderId,
-            OwnerId = folder.OwnerId,
             Name = folder.Name,
             Path = folder.Path,
         };
     }
-
     private static FolderPersistence ToPersistence(FolderModel folder)
     {
         return new FolderPersistence
         {
             Id = folder.Id,
             ParentFolderId = folder.ParentFolderId,
-            OwnerId = folder.OwnerId,
             Name = folder.Name,
             Path = folder.Path,
         };

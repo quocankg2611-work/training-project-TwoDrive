@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using TwoDrive.Core.Models;
 using TwoDrive.Persistence.Models;
 using TwoDrive.Services.__Persistence__;
+using TwoDrive.Services.__Services__;
 
 namespace TwoDrive.Persistence.Repositories;
 
-internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
+internal class FilesRepository(AppDbContext dbContext, ICurrentUserService currentUserService) : IFilesRepository
 {
     public async Task<FileModel?> GetByIdAsync(Guid id)
     {
@@ -41,6 +42,7 @@ internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
     public Task CreateAsync(FileModel file)
     {
         var filePersistence = ToPersistence(file);
+        filePersistence.SetAuditFieldsOnCreated(currentUserService);
         return dbContext.Files.AddAsync(filePersistence).AsTask();
     }
 
@@ -49,7 +51,6 @@ internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
         var existingFile = await dbContext.Files.SingleOrDefaultAsync(x => x.Id == file.Id) ?? throw new KeyNotFoundException($"File '{file.Id}' was not found.");
 
         existingFile.FolderId = file.FolderId ?? throw new ArgumentException("FolderId is required.", nameof(file));
-        existingFile.OwnerId = file.OwnerId;
         existingFile.Name = file.Name;
         existingFile.Extension = file.Extension;
         existingFile.Path = file.Path;
@@ -57,6 +58,8 @@ internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
         existingFile.SizeBytes = file.SizeBytes;
         existingFile.StorageKey = file.StorageKey;
         existingFile.Checksum = file.Checksum;
+
+        existingFile.SetAuditFieldsOnUpdated(currentUserService);
 
         await dbContext.SaveChangesAsync();
     }
@@ -74,7 +77,6 @@ internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
         {
             Id = file.Id,
             FolderId = file.FolderId,
-            OwnerId = file.OwnerId,
             Name = file.Name,
             Extension = file.Extension,
             Path = file.Path,
@@ -91,7 +93,6 @@ internal class FilesRepository(AppDbContext dbContext) : IFilesRepository
         {
             Id = file.Id,
             FolderId = file.FolderId,
-            OwnerId = file.OwnerId,
             Name = file.Name,
             Extension = file.Extension,
             Path = file.Path,

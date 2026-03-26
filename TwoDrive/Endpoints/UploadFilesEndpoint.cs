@@ -34,6 +34,7 @@ public sealed class UploadFilesEndpoint : IEndpoint
             .WithName("UploadFiles")
             .Accepts<UploadFilesRequest>("multipart/form-data")
             .WithTags("Files")
+            .RequireAuthorization()
             .Produces(StatusCodes.Status200OK)
             .DisableAntiforgery() // CSRF disabled
             ;

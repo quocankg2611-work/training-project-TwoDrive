@@ -23,6 +23,7 @@ public sealed class GetFileByIdEndpoint : IEndpoint
         app.MapGet("/files/{fileId:guid}", HandleAsync)
             .WithName("GetFileById")
             .WithTags("Files")
+            .RequireAuthorization()
             .Produces<GetFileByIdResponse>(StatusCodes.Status200OK);
     }
 

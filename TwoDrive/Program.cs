@@ -6,15 +6,16 @@ using TwoDrive.Storage;
 using Microsoft.Extensions.Azure;
 using TwoDrive.Services;
 using TwoDrive.Api.Common;
+using TwoDrive.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// Authentication setup with Azure AD
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Azure Storage clients setup
 builder.Services.AddAzureClients(clientBuilder =>
 {
     clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnectionString:blobServiceUri"]!);
@@ -22,14 +23,17 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnectionString:tableServiceUri"]!);
 });
 
+
 // Infrastructure
 builder.Services.AddTwoDriveStorageServices();
+builder.Services.AddTwoDriveHttp();
 builder.Services.AddTwoDrivePersistence(builder.Configuration);
 
 // Application
 builder.Services.AddTwoDriveServices();
 
 // API
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddValidation();
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 builder.Services.AddOpenApi();
@@ -59,6 +63,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 
