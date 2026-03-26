@@ -11,11 +11,11 @@ internal class CurrentUserService(IHttpContextAccessor httpContextAccessor) : IC
 
     public string GetUserIdOrThrow()
     {
-        return httpContextAccessor.HttpContext?.User?.FindFirst("oid")?.Value ?? throw new InvalidOperationException("User ID not found.");
+        return httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == HttpConstants.Claim.UserId)?.Value ?? throw new InvalidOperationException("User ID not found.");
     }
 
     public string GetUserNameOrThrow()
     {
-        return httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value ?? throw new InvalidOperationException("User name not found.");
+        return httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == HttpConstants.Claim.Name)?.Value ?? throw new InvalidOperationException("User name not found.");
     }
 }

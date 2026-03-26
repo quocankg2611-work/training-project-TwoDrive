@@ -32,8 +32,8 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
                 item.DocumentType,
                 item.Extension,
                 item.ModifiedBy,
-                item.CreatedAt,
-                item.UpdatedAt)).ToArray());
+                item.CreatedAt.ToString("o"),
+                item.UpdatedAt.ToString("o"))).ToArray());
 
         return Results.Ok(response);
     }
@@ -54,8 +54,8 @@ public sealed record GetDocumentsByPathResponseItem(
     string DocumentType,
     string? Extension,
     string ModifiedBy,
-    DateTime CreatedAt,
-    DateTime UpdatedAt);
+    string CreatedAt,
+    string UpdatedAt);
 
 public sealed record GetDocumentsByPathResponse(IReadOnlyCollection<GetDocumentsByPathResponseItem> Items);
 

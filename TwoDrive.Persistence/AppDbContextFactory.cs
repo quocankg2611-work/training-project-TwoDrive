@@ -68,7 +68,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 {
                     Id = Guid.NewGuid(),
                     Name = "CoasterAndBargelLoading",
-                    Extension = "docx",
+                    Extension = ".docx",
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     FolderId = rootFolderId,
@@ -86,7 +86,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices",
-                    Extension = "xlsx",
+                    Extension = ".xlsx",
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,
@@ -104,7 +104,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices2016",
-                    Extension = "xlsx",
+                    Extension = ".xlsx",
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,
@@ -122,7 +122,7 @@ internal class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
                 {
                     Id = Guid.NewGuid(),
                     Name = "RevenueByServices2017",
-                    Extension = "xlsx",
+                    Extension = ".xlsx",
                     Path = "/",
                     MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     FolderId = rootFolderId,

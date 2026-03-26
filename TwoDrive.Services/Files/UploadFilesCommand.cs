@@ -32,28 +32,21 @@ internal class UploadFilesCommandHandler(
 {
     public async Task Handle(UploadFilesCommand command)
     {
-        try
-        {
-            var storageKeysList = command.FilesData.Select(_ => Guid.NewGuid().ToString()).ToList();
-            var filesDataWithStorageKeys = command.FilesData.Zip(storageKeysList, (fileData, storageKey) => (fileData, storageKey)).ToList();
+        var storageKeysList = command.FilesData.Select(_ => Guid.NewGuid().ToString()).ToList();
+        var filesDataWithStorageKeys = command.FilesData.Zip(storageKeysList, (fileData, storageKey) => (fileData, storageKey)).ToList();
 
-            var uploadFileTask = UploadFileAsync(filesDataWithStorageKeys);
-            var persistFileTask = Task.Run(async () =>
-            {
-                foreach (var (fileData, storageKey) in filesDataWithStorageKeys)
-                {
-                    var parentFolder = await CreateMissingFoldersAsync(command.BasePath, fileData.Path);
-                    await CreateFileAsync(parentFolder, fileData, storageKey);
-                }
-            });
-            
-            await Task.WhenAll([persistFileTask, uploadFileTask]);
-            await unitOfWork.SaveChangesAsync();
-        }
-        catch (Exception ex)
+        var uploadFileTask = UploadFileAsync(filesDataWithStorageKeys);
+        var persistFileTask = Task.Run(async () =>
         {
-            Console.WriteLine(ex.StackTrace);
-        }
+            foreach (var (fileData, storageKey) in filesDataWithStorageKeys)
+            {
+                var parentFolder = await CreateMissingFoldersAsync(command.BasePath, fileData.Path);
+                await CreateFileAsync(parentFolder, fileData, storageKey);
+            }
+        });
+
+        await Task.WhenAll([persistFileTask, uploadFileTask]);
+        await unitOfWork.SaveChangesAsync();
     }
 
     /// <summary>

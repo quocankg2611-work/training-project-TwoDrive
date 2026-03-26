@@ -8,8 +8,8 @@ namespace TwoDrive.Persistence.Models
         public string CreatedByUserNameSnapshot { get; set; } = string.Empty;
         public string UpdatedByUserId { get; set; } = string.Empty;
         public string UpdatedByUserNameSnapshot { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset UpdatedAt { get; set; }
 
         public void SetAuditFieldsOnCreated(ICurrentUserService currentUserService)
         {
@@ -17,15 +17,15 @@ namespace TwoDrive.Persistence.Models
             CreatedByUserNameSnapshot = currentUserService.GetUserNameOrThrow();
             UpdatedByUserId = currentUserService.GetUserIdOrThrow();
             UpdatedByUserNameSnapshot = currentUserService.GetUserNameOrThrow();
-            CreatedAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
+            CreatedAt = DateTimeOffset.UtcNow;
+            UpdatedAt = DateTimeOffset.UtcNow;
         }
 
         public void SetAuditFieldsOnUpdated(ICurrentUserService currentUserService)
         {
             UpdatedByUserId = currentUserService.GetUserIdOrThrow();
             UpdatedByUserNameSnapshot = currentUserService.GetUserNameOrThrow();
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 }
