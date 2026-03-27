@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TwoDrive.Persistence.Common;
-using TwoDrive.Persistence.Helpers;
 using TwoDrive.Persistence.Repositories;
 using TwoDrive.Services.__Persistence__;
 using TwoDrive.Services.Common;
@@ -14,16 +13,21 @@ namespace TwoDrive.Persistence
         public static IServiceCollection AddTwoDrivePersistence(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString(Constants.CONNECTION_STRING_KEY);
+            var environmentName = configuration["ASPNETCORE_ENVIRONMENT"];
+            var isDevelopment = string.Equals(environmentName, "Development", StringComparison.OrdinalIgnoreCase);
 
-            services.AddSingleton<AuditSaveChangesInterceptor>();
             services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
                 options
                     .UseSqlServer(connectionString)
-                    .AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>());
+                    .EnableDetailedErrors();
+
+                if (isDevelopment)
+                {
+                    options.EnableSensitiveDataLogging();
+                }
             });
 
-            services.AddScoped<PathMaintenanceHelper>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.Scan(scan => scan
