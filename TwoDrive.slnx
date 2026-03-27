@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Test/">
     <Project Path="TwoDrive.IntegrationTest/TwoDrive.IntegrationTest.csproj" Id="9100c9b6-1cbb-413d-8243-df35e9b09f01" />
+    <Project Path="TwoDrive.UnitTest/TwoDrive.UnitTest.csproj" Id="51f05caa-396e-4374-934b-2ae2043d1cd4" />
   </Folder>
   <Project Path="TwoDrive.Core/TwoDrive.Core.csproj" Id="6c535a72-7237-46f0-a670-8542ce09cb44" />
   <Project Path="TwoDrive.Http/TwoDrive.Http.csproj" Id="287f2105-550a-44f6-8dc8-7c3d663c2231" />

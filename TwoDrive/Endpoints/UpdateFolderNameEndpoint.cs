@@ -14,23 +14,23 @@ public sealed class UpdateFolderRequest
     public string? NewName { get; init; }
 }
 
-public sealed class UpdateFolderEndpoint : IEndpoint
+public sealed class UpdateFolderNameEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("/folders", HandleAsync)
+        app.MapPatch("/folders-name", HandleAsync)
             .WithName("UpdateFolder")
             .WithTags("Folders")
             .RequireAuthorization()
             .Produces(StatusCodes.Status200OK);
     }
 
-    private static async Task<IResult> HandleAsync([FromBody] UpdateFolderRequest request, [FromServices] ICommandHandler<UpdateFolderCommand> handler)
+    private static async Task<IResult> HandleAsync([FromBody] UpdateFolderRequest request, [FromServices] ICommandHandler<UpdateFolderNameCommand> handler)
     {
-        await handler.Handle(new UpdateFolderCommand
+        await handler.Handle(new UpdateFolderNameCommand
         {
             FolderId = request.FolderId!.Value,
-            NewName = request.NewName,
+            NewName = request.NewName ?? throw new ArgumentException("NewName cannot be null or empty."),
         });
 
         return Results.Ok();

@@ -16,4 +16,5 @@ public interface IFoldersRepository : IRepository
     Task BulkCreateAsync(IEnumerable<FolderModel> folders);
     Task UpdateAsync(FolderModel folder);
     Task BulkDeleteAsync(IEnumerable<Guid> ids);
+    Task UpdateFolderNameAsync(Guid folderId, string newName);
 }

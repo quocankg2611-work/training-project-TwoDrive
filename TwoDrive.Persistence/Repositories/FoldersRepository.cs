@@ -70,6 +70,8 @@ internal class FoldersRepository(AppDbContext dbContext, ICurrentUserService cur
             throw new KeyNotFoundException($"Folder '{folder.Id}' was not found.");
         }
 
+        var subFolderPath = existingFolder.Path + existingFolder.Name + '/';
+
         existingFolder.ParentFolderId = folder.ParentFolderId;
         existingFolder.Name = folder.Name;
         existingFolder.Path = folder.Path;
@@ -77,12 +79,66 @@ internal class FoldersRepository(AppDbContext dbContext, ICurrentUserService cur
         existingFolder.SetAuditFieldsOnUpdated(currentUserService);
     }
 
+    /// <summary>
+    /// We need to recursively update the path of all child folders when the folder name is updated, to keep the path consistent with the folder name.
+    /// </summary>
+    /// <param name="folderId"></param>
+    /// <param name="newName"></param>
+    /// <returns></returns>
+    /// <exception cref="KeyNotFoundException"></exception>
+    public async Task UpdateFolderNameAsync(Guid folderId, string newName)
+    {
+        var existingFolder = await dbContext.Folders
+            .SingleOrDefaultAsync(x => x.Id == folderId) ?? throw new KeyNotFoundException($"Folder '{folderId}' was not found.");
+
+        var orgSubFolderPath = existingFolder.PathForChildren;
+
+        // Update properties
+        existingFolder.Name = newName;
+        existingFolder.SetAuditFieldsOnUpdated(currentUserService);
+        await dbContext.SaveChangesAsync();
+
+        var subFolderPath = existingFolder.PathForChildren;
+
+        // Scan all child folders and update their path in batch
+        await dbContext.Folders
+            .Where(x => x.Path.StartsWith(orgSubFolderPath))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.Path, x => subFolderPath + x.Path.Substring(orgSubFolderPath.Length))
+                );
+
+        // Scan all child files and update their path in batch
+        await dbContext.Files
+            .Where(x => x.Path.StartsWith(orgSubFolderPath))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.Path, x => subFolderPath + x.Path.Substring(orgSubFolderPath.Length))
+                );
+    }
+
+    /// <summary>
+    /// SQL do not allow self-referencing table to be deleted in cascade
+    /// We need to recursively find all child folders and delete them together with the parent folder in one transaction to avoid the cascade delete issue.
+    /// </summary>
+    /// <param name="ids"></param>
+    /// <returns></returns>
     public async Task BulkDeleteAsync(IEnumerable<Guid> ids)
     {
-        var folders = await dbContext.Folders
+        if (ids.Any() == false) return;
+
+        var subFolderQueryPaths = await dbContext.Folders
             .Where(x => ids.Contains(x.Id))
+            .Select(x => x.PathForChildren)
             .ToListAsync();
-        dbContext.Folders.RemoveRange(folders);
+
+        var lambda = RepositoryUtils.BuildFolderByPathExpression(subFolderQueryPaths) ?? throw new InvalidOperationException("Failed to build folder paths expression.");
+
+        // Delete sub-folders
+        await dbContext.Folders
+            .Where(lambda)
+            .ExecuteDeleteAsync();
+
+        // Delete folders
+        await dbContext.Folders.Where(x => ids.Contains(x.Id)).ExecuteDeleteAsync();
     }
 
     private static FolderModel ToModel(FolderPersistence folder)

@@ -79,7 +79,7 @@ internal class UploadFilesCommandHandler(
     /// <returns>Return the parent folder of the file, which can be null if the file is created at root.</returns>
     private async Task<FolderModel?> CreateMissingFoldersAsync(string basePath, string filePath)
     {
-        FolderModel? fileParentFolder = null;
+        FolderModel? firstFoundFolder = null;
         var foldersToCreate = new List<FolderModel>();
         var fullPath = PathUtils.ConcatPath(basePath, filePath);
         var pathParts = PathUtils.SplitPath(fullPath);
@@ -89,13 +89,8 @@ internal class UploadFilesCommandHandler(
             var folderOfPath = await foldersRepository.GetByPathAsync(currentPath);
             if (folderOfPath != null)
             {
-                // If we haven't found any missing folder so far, it means the file's parent folder already exists.
-                if (foldersToCreate.Count == 0)
-                {
-                    fileParentFolder = folderOfPath;
-                }
-
                 // Found an existing folder in the path, so we can stop here. All parent folders above this already exist.
+                    firstFoundFolder = folderOfPath;
                 break;
             }
             else
@@ -116,15 +111,21 @@ internal class UploadFilesCommandHandler(
         }
 
         // Set parent folder ID back
-        // List order is: Child => ... => Parent
+        // List order is: Child => ... => Parent => FirstFoundFolder (if exists)
         for (int i = 0; i < foldersToCreate.Count - 1; i++)
         {
             foldersToCreate[i].ParentFolderId = foldersToCreate[i + 1].Id;
         }
+        if (firstFoundFolder != null && foldersToCreate.Count > 0)
+        {
+            foldersToCreate.Last().ParentFolderId = firstFoundFolder.Id;
+        }
         await foldersRepository.BulkCreateAsync(foldersToCreate);
+        await unitOfWork.SaveChangesAsync();
 
         // Return the parent folder of the file, which can be null if the file is created at root.
-        return fileParentFolder ?? foldersToCreate.FirstOrDefault() ?? null;
+        // Prioritize: 1) The most immediate parent folder (which is the first item in foldersToCreate list), 2) The first found existing folder in the path, 3) null if no folders at all (file created at root).
+        return foldersToCreate.FirstOrDefault() ?? firstFoundFolder ?? null;
     }
 
     private async Task UploadFileAsync(List<(UploadFilesCommand.Item fileData, string storageKey)> filesDataWithStorageKeys)

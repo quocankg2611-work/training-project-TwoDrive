@@ -44,7 +44,6 @@ namespace TwoDrive.Persistence.Configs
 
             builder.HasIndex(x => x.Path);
             builder.HasIndex(x => x.FolderId);
-            builder.HasIndex(x => x.CreatedByUserId);
 
             builder.HasOne(x => x.Folder)
                 .WithMany(x => x.Files)

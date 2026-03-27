@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TwoDrive.Core.Models;
 using TwoDrive.Persistence.Models;
@@ -32,10 +33,15 @@ internal class FilesRepository(AppDbContext dbContext, ICurrentUserService curre
     {
         // We have "Path" field on both Folder and File, which contains the full path from the root
         // This allows us to efficiently query all files that are in the specified folder or any of its subfolders by using a "StartsWith" query on the file's Path.
+        var folderPaths = folderModels.Select(f => f.PathForChildren).ToList();
+
+        if (folderPaths.Count == 0) return [];
+        var lambda = RepositoryUtils.BuildFilesByPathExpression(folderPaths) ?? throw new InvalidOperationException("Failed to build folder paths expression.");
         var files = await dbContext.Files
-            .Where(file => folderModels.Any(folder => file.Path.StartsWith(folder.Path)))
+            .Where(lambda)
             .Select(file => ToModel(file))
             .ToListAsync();
+
         return files;
     }
 

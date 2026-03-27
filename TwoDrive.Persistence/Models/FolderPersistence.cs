@@ -12,5 +12,9 @@
         public FolderPersistence? ParentFolder { get; set; }
         public ICollection<FolderPersistence> ChildFolders { get; set; } = new List<FolderPersistence>();
         public ICollection<FilePersistence> Files { get; set; } = new List<FilePersistence>();
+
+        // Computed properties
+
+        public string PathForChildren => $"{Path.TrimEnd('/')}/{Name}";
     }
 }

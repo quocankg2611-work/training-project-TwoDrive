@@ -14,16 +14,20 @@ public class DeleteFoldersCommand : ICommand
 internal class DeleteFolderCommandHandler(
     IFoldersRepository foldersRepository,
     IFilesRepository filesRepository,
-    IFileStorageService fileStorageService) : ICommandHandler<DeleteFoldersCommand>
+    IFileStorageService fileStorageService,
+    IUnitOfWork unitOfWork) : ICommandHandler<DeleteFoldersCommand>
 {
     public async Task Handle(DeleteFoldersCommand command)
     {
         var folders = await foldersRepository.GetByIdsAsync(command.FolderIds);
+
+        // To remove the files from storage
         var filesToDelete = await filesRepository.QueryDeepChildrenOfFolders(folders);
 
         var storageTask = fileStorageService.DeleteBulkAsync(CoreConstants.CONTAINER_NAME_FILES, filesToDelete.Select(f => f.StorageKey));
         var persistenceTask = foldersRepository.BulkDeleteAsync(command.FolderIds);
 
         await Task.WhenAll(storageTask, persistenceTask);
+        await unitOfWork.SaveChangesAsync();
     }
 }

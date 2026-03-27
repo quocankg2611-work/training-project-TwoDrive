@@ -26,12 +26,11 @@ namespace TwoDrive.Persistence.Configs
 
             builder.HasIndex(x => x.Path);
             builder.HasIndex(x => x.ParentFolderId);
-            builder.HasIndex(x => x.CreatedByUserId);
 
             builder.HasOne(x => x.ParentFolder)
                 .WithMany(x => x.ChildFolders)
                 .HasForeignKey(x => x.ParentFolderId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(x => x.Files)
                 .WithOne(x => x.Folder)
