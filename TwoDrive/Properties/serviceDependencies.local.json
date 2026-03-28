@@ -1,14 +1,16 @@
 {
   "dependencies": {
-    "identityapp1": {
-      "connectionInfo": "App registration: TwoDrive, Tenant: Precio Fishbone Vietnam Training (pfvt.onmicrosoft.com - Microsoft Entra ID)",
-      "type": "identityapp.default"
-    },
     "storage1": {
       "secretStore": "LocalSecretsFile",
       "resourceId": null,
       "type": "storage.emulator",
       "connectionId": "StorageConnectionString"
+    },
+    "identityapp1": {
+      "connectionInfo": "App registration: TwoDrive, Tenant: Precio Fishbone Vietnam Training (pfvt.onmicrosoft.com - Microsoft Entra ID)",
+      "secretStore": null,
+      "resourceId": null,
+      "type": "identityapp.default"
     }
   }
 }

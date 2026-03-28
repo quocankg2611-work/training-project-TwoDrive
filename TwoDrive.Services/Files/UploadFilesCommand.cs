@@ -32,24 +32,21 @@ internal class UploadFilesCommandHandler(
 {
     public async Task Handle(UploadFilesCommand command)
     {
-        try
+        var storageKeysList = command.FilesData.Select(_ => Guid.NewGuid().ToString()).ToList();
+        var filesDataWithStorageKeys = command.FilesData.Zip(storageKeysList, (fileData, storageKey) => (fileData, storageKey)).ToList();
+
+        var uploadFileTask = UploadFileAsync(filesDataWithStorageKeys);
+        var persistFileTask = Task.Run(async () =>
         {
-            var uploadFileTask = UploadFileAsync(command);
-            var persistFileTask = Task.Run(async () =>
+            foreach (var (fileData, storageKey) in filesDataWithStorageKeys)
             {
-                foreach (var fileData in command.FilesData)
-                {
-                    var parentFolder = await CreateMissingFoldersAsync(command.BasePath, fileData.Path);
-                    await CreateFileAsync(parentFolder, fileData);
-                }
-            });
-            await Task.WhenAll([persistFileTask, uploadFileTask]);
-            await unitOfWork.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.StackTrace);
-        }
+                var parentFolder = await CreateMissingFoldersAsync(command.BasePath, fileData.Path);
+                await CreateFileAsync(parentFolder, fileData, storageKey);
+            }
+        });
+
+        await Task.WhenAll([persistFileTask, uploadFileTask]);
+        await unitOfWork.SaveChangesAsync();
     }
 
     /// <summary>
@@ -57,7 +54,7 @@ internal class UploadFilesCommandHandler(
     /// <param name="parentFolder">If null, then create file at root</param>
     /// <param name="fileData"></param>
     /// <returns></returns>
-    private async Task CreateFileAsync(FolderModel? parentFolder, UploadFilesCommand.Item fileData)
+    private async Task CreateFileAsync(FolderModel? parentFolder, UploadFilesCommand.Item fileData, string storageKey)
     {
         var fileModel = new FileModel
         {
@@ -68,9 +65,8 @@ internal class UploadFilesCommandHandler(
             SizeBytes = fileData.FileSizeBytes,
             FolderId = parentFolder?.Id,
             Path = parentFolder?.PathForChildren ?? CoreConstants.ROOT_PATH,
-            OwnerId = MockUtils.MOCK_USER_ID,
             Checksum = string.Empty,
-            StorageKey = string.Empty,
+            StorageKey = storageKey,
         };
         await filesRepository.CreateAsync(fileModel);
     }
@@ -83,23 +79,18 @@ internal class UploadFilesCommandHandler(
     /// <returns>Return the parent folder of the file, which can be null if the file is created at root.</returns>
     private async Task<FolderModel?> CreateMissingFoldersAsync(string basePath, string filePath)
     {
-        FolderModel? fileParentFolder = null;
+        FolderModel? firstFoundFolder = null;
         var foldersToCreate = new List<FolderModel>();
         var fullPath = PathUtils.ConcatPath(basePath, filePath);
         var pathParts = PathUtils.SplitPath(fullPath);
         for (int i = pathParts.Length; i > 0; i--)
         {
             var currentPath = PathUtils.CombinePath(pathParts.Take(i).ToArray());
-            var folderOfPath = await foldersRepository.FindByPathAsync(currentPath);
+            var folderOfPath = await foldersRepository.GetByPathAsync(currentPath);
             if (folderOfPath != null)
             {
-                // If we haven't found any missing folder so far, it means the file's parent folder already exists.
-                if (foldersToCreate.Count == 0)
-                {
-                    fileParentFolder = folderOfPath;
-                }
-
                 // Found an existing folder in the path, so we can stop here. All parent folders above this already exist.
+                    firstFoundFolder = folderOfPath;
                 break;
             }
             else
@@ -113,7 +104,6 @@ internal class UploadFilesCommandHandler(
                     Id = Guid.NewGuid(),
                     Name = parentPathName,
                     Path = parentPath,
-                    OwnerId = MockUtils.MOCK_USER_ID,
                     ParentFolderId = null,
                 };
                 foldersToCreate.Add(newParentFolder);
@@ -121,27 +111,33 @@ internal class UploadFilesCommandHandler(
         }
 
         // Set parent folder ID back
-        // List order is: Child => ... => Parent
+        // List order is: Child => ... => Parent => FirstFoundFolder (if exists)
         for (int i = 0; i < foldersToCreate.Count - 1; i++)
         {
             foldersToCreate[i].ParentFolderId = foldersToCreate[i + 1].Id;
         }
+        if (firstFoundFolder != null && foldersToCreate.Count > 0)
+        {
+            foldersToCreate.Last().ParentFolderId = firstFoundFolder.Id;
+        }
         await foldersRepository.BulkCreateAsync(foldersToCreate);
+        await unitOfWork.SaveChangesAsync();
 
         // Return the parent folder of the file, which can be null if the file is created at root.
-        return fileParentFolder ?? foldersToCreate.FirstOrDefault() ?? null;
+        // Prioritize: 1) The most immediate parent folder (which is the first item in foldersToCreate list), 2) The first found existing folder in the path, 3) null if no folders at all (file created at root).
+        return foldersToCreate.FirstOrDefault() ?? firstFoundFolder ?? null;
     }
 
-    private async Task UploadFileAsync(UploadFilesCommand command)
+    private async Task UploadFileAsync(List<(UploadFilesCommand.Item fileData, string storageKey)> filesDataWithStorageKeys)
     {
-        var uploadDtos = command.FilesData.Select(data => new FileUploadDto(
+        var uploadDtos = filesDataWithStorageKeys.Select(data => new FileUploadDto(
                 ContainerName: CoreConstants.CONTAINER_NAME_FILES,
-                BlobName: string.Join("_", command.BasePath, data.Path, data.FileName),
-                Content: data.FileStream,
-                ContentType: data.MimeType,
+                BlobName: data.storageKey,
+                Content: data.fileData.FileStream,
+                ContentType: data.fileData.MimeType,
                 Progress: (progress) =>
                 {
-                    Console.WriteLine($"Uploading {data.FileName}: {progress} bytes uploaded.");
+                    Console.WriteLine($"Uploading {data.fileData.FileName}: {progress} bytes uploaded.");
                 })
         );
         await fileStorageService.UploadBulkAsync(uploadDtos, CancellationToken.None);

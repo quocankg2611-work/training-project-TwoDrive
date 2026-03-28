@@ -13,6 +13,7 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
         app.MapGet("/documents", HandleAsync)
             .WithName("GetDocumentsByPath")
             .WithTags("Documents")
+            .RequireAuthorization()
             .Produces<GetDocumentsByPathResponse>(StatusCodes.Status200OK);
     }
 
@@ -29,10 +30,10 @@ public sealed class GetDocumentsByPathEndpoint : IEndpoint
                 item.Name,
                 item.Path,
                 item.DocumentType,
-                item.FileType,
+                item.Extension,
                 item.ModifiedBy,
-                item.CreatedAt,
-                item.UpdatedAt)).ToArray());
+                item.CreatedAt.ToString("o"),
+                item.UpdatedAt.ToString("o"))).ToArray());
 
         return Results.Ok(response);
     }
@@ -51,10 +52,10 @@ public sealed record GetDocumentsByPathResponseItem(
     string Name,
     string Path,
     string DocumentType,
-    string? FileType,
+    string? Extension,
     string ModifiedBy,
-    DateTime CreatedAt,
-    DateTime UpdatedAt);
+    string CreatedAt,
+    string UpdatedAt);
 
 public sealed record GetDocumentsByPathResponse(IReadOnlyCollection<GetDocumentsByPathResponseItem> Items);
 

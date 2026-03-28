@@ -14,10 +14,10 @@ public record GetDocumentsQueryResultItem(
     string Name,
     string Path,
     string DocumentType,
-    string? FileType,
+    string? Extension,
     string ModifiedBy,
-    DateTime CreatedAt,
-    DateTime UpdatedAt
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt
     );
 
 internal class GetDocumentsByPathQueryHandler(AppDbContext _dbContext) : IQueryHandler<GetDocumentsByPathQuery, IEnumerable<GetDocumentsQueryResultItem>>
@@ -34,7 +34,7 @@ internal class GetDocumentsByPathQueryHandler(AppDbContext _dbContext) : IQueryH
                 x.Path,
                 DocumentTypeEnum.Folder.ToDocumentTypeString(),
                 null,
-                x.OwnerId.ToString(),
+                x.UpdatedByUserNameSnapshot,
                 x.CreatedAt,
                 x.UpdatedAt))
             .ToListAsync();
@@ -47,8 +47,8 @@ internal class GetDocumentsByPathQueryHandler(AppDbContext _dbContext) : IQueryH
                 x.Name,
                 x.Path,
                 DocumentTypeEnum.File.ToDocumentTypeString(),
-                x.MimeType,
-                x.OwnerId.ToString(),
+                x.Extension,
+                x.UpdatedByUserNameSnapshot,
                 x.CreatedAt,
                 x.UpdatedAt))
             .ToListAsync();

@@ -4,7 +4,7 @@ using TwoDrive.Persistence.Models;
 
 namespace TwoDrive.Persistence.Configs
 {
-    internal class FolderConfiguration : IEntityTypeConfiguration<FolderPersistence>
+    internal class FolderConfiguration : AuditPersistenceBaseConfig<FolderPersistence>, IEntityTypeConfiguration<FolderPersistence>
     {
         public void Configure(EntityTypeBuilder<FolderPersistence> builder)
         {
@@ -14,9 +14,6 @@ namespace TwoDrive.Persistence.Configs
             builder.Property(x => x.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-            builder.Property(x => x.OwnerId)
-                .IsRequired();
-
             builder.Property(x => x.Name)
                 .HasMaxLength(255)
                 .IsRequired();
@@ -25,20 +22,15 @@ namespace TwoDrive.Persistence.Configs
                 .HasMaxLength(4000)
                 .IsRequired();
 
-            builder.Property(x => x.CreatedAt)
-                .IsRequired();
-
-            builder.Property(x => x.UpdatedAt)
-                .IsRequired();
+            ConfigureAudit(builder);
 
             builder.HasIndex(x => x.Path);
             builder.HasIndex(x => x.ParentFolderId);
-            builder.HasIndex(x => x.OwnerId);
 
             builder.HasOne(x => x.ParentFolder)
                 .WithMany(x => x.ChildFolders)
                 .HasForeignKey(x => x.ParentFolderId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(x => x.Files)
                 .WithOne(x => x.Folder)

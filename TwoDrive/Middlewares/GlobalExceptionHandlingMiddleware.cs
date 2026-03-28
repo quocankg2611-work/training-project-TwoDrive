@@ -1,4 +1,6 @@
-namespace TwoDrive.Api.Common;
+using TwoDrive.Api.Common;
+
+namespace TwoDrive.Api.Middlewares;
 
 public sealed class GlobalExceptionHandlingMiddleware(RequestDelegate next)
 {

@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using System.Collections.Concurrent;
 using TwoDrive.Services.__Services__;
 
 namespace TwoDrive.Storage;
@@ -38,22 +39,34 @@ internal class AzureFileStorageService(BlobServiceClient _blobServiceClient) : I
     {
         ArgumentNullException.ThrowIfNull(files);
 
-        var containerClients = new Dictionary<string, BlobContainerClient>(StringComparer.OrdinalIgnoreCase);
+        var filesToUpload = files.ToList();
 
-        foreach (var file in files)
+        foreach (var file in filesToUpload)
         {
+            ArgumentNullException.ThrowIfNull(file);
             ArgumentException.ThrowIfNullOrWhiteSpace(file.ContainerName);
             ArgumentException.ThrowIfNullOrWhiteSpace(file.BlobName);
             ArgumentNullException.ThrowIfNull(file.Content);
             ArgumentException.ThrowIfNullOrWhiteSpace(file.ContentType);
+        }
 
-            if (!containerClients.TryGetValue(file.ContainerName, out var containerClient))
+        var containerClients = new ConcurrentDictionary<string, BlobContainerClient>(StringComparer.OrdinalIgnoreCase);
+
+        var ensureContainerTasks = filesToUpload
+            .Select(file => file.ContainerName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(async containerName =>
             {
-                containerClient = _blobServiceClient.GetBlobContainerClient(file.ContainerName);
+                var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
                 await containerClient.CreateIfNotExistsAsync(cancellationToken: ct);
-                containerClients[file.ContainerName] = containerClient;
-            }
+                containerClients[containerName] = containerClient;
+            });
 
+        await Task.WhenAll(ensureContainerTasks);
+
+        var uploadTasks = filesToUpload.Select(async file =>
+        {
+            var containerClient = containerClients[file.ContainerName];
             var blobClient = containerClient.GetBlobClient(file.BlobName);
             await blobClient.UploadAsync(
                 file.Content,
@@ -63,9 +76,11 @@ internal class AzureFileStorageService(BlobServiceClient _blobServiceClient) : I
                     ProgressHandler = new Progress<long>(bytesUploaded =>
                     {
                         // Optionally, report progress here (e.g., log or update a progress bar)
-                    })
+                    }),
                 },
                 ct);
-        }
+        });
+
+        await Task.WhenAll(uploadTasks);
     }
 }

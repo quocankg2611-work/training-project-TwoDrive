@@ -13,6 +13,7 @@ public sealed class DeleteFilesEndpoint : IEndpoint
         app.MapDelete("/files", HandleAsync)
             .WithName("DeleteFiles")
             .WithTags("Files")
+            .RequireAuthorization()
             .Produces(StatusCodes.Status200OK);
     }
 

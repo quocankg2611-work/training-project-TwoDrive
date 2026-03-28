@@ -13,12 +13,14 @@ public sealed class CreateFolderEndpoint : IEndpoint
         app.MapPost("/folders", HandleAsync)
             .WithName("CreateFolder")
             .WithTags("Folders")
+            .RequireAuthorization()
             .Produces<CreateFolderResponse>(StatusCodes.Status200OK)
             ;
     }
 
-    private static async Task<IResult> HandleAsync([FromBody] CreateFolderRequest request, [FromServices] ICommandHandler<CreateFolderCommand, CreateFolderCommandResult> handler)
+    private static async Task<IResult> HandleAsync([FromBody] CreateFolderRequest request, [FromServices] ICommandHandler<CreateFolderCommand, CreateFolderCommandResult> handler, HttpContext httpContext)
     {
+        var user = httpContext.User;
         var result = await handler.Handle(new CreateFolderCommand
         {
             ParentFolderId = request.ParentFolderId,

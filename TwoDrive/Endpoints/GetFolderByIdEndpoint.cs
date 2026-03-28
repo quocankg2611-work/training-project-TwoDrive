@@ -21,6 +21,7 @@ public sealed class GetFolderByIdEndpoint : IEndpoint
         app.MapGet("/folders/{folderId:guid}", HandleAsync)
             .WithName("GetFolderById")
             .WithTags("Folders")
+            .RequireAuthorization()
             .Produces<GetFolderByIdResponse>(StatusCodes.Status200OK);
     }
 

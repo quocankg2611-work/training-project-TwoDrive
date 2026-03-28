@@ -20,9 +20,14 @@
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.14.1" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.3.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.13.13" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TwoDrive.Http\TwoDrive.Http.csproj" />
     <ProjectReference Include="..\TwoDrive.Persistence\TwoDrive.Persistence.csproj" />
     <ProjectReference Include="..\TwoDrive.Storage\TwoDrive.Storage.csproj" />
   </ItemGroup>

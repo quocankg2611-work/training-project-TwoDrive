@@ -20,6 +20,7 @@ public sealed class DeleteFoldersEndpoint : IEndpoint
         app.MapDelete("/folders", HandleAsync)
             .WithName("DeleteFolders")
             .WithTags("Folders")
+            .RequireAuthorization()
             .Produces(StatusCodes.Status200OK);
     }
 

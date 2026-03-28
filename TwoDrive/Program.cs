@@ -1,50 +1,60 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Scalar.AspNetCore;
+using Serilog;
 using TwoDrive.Persistence;
 using TwoDrive.Storage;
 using Microsoft.Extensions.Azure;
 using TwoDrive.Services;
 using TwoDrive.Api.Common;
+using TwoDrive.Http;
+using TwoDrive.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Azure AD config
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-// Azure blob storage
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnectionString:blobServiceUri"]!);
-    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageConnectionString:queueServiceUri"]!);
-    clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnectionString:tableServiceUri"]!);
-});
 
 // Infrastructure
-builder.Services.AddTwoDriveStorageServices();
+builder.Services.AddTwoDriveHttp();
+builder.Services.AddTwoDriveStorageServices(builder.Configuration);
 builder.Services.AddTwoDrivePersistence(builder.Configuration);
 
 // Application
 builder.Services.AddTwoDriveServices();
 
 // API
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddValidation();
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 builder.Services.AddOpenApi();
 
-string allowDevFrontendPolicy = "AllowDevFrontend";
-builder.Services.AddCors(options =>
+// CORS setup for development environment
+if (builder.Environment.IsDevelopment())
 {
-	options.AddPolicy(allowDevFrontendPolicy,
-		policy =>
-		{
-			policy.WithOrigins("http://localhost:5500")
-				  .AllowAnyHeader()
-				  .AllowAnyMethod();
-		});
+    builder.Services.AddCors(opt =>
+    {
+        opt.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+    });
+}
+
+// Logging
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext();
 });
+
+// Authentication setup with Azure AD
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 var app = builder.Build();
 
@@ -55,9 +65,13 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.UseMiddleware<LoggingMiddleware>();
+
 app.UseHttpsRedirection();
 
-app.UseCors(allowDevFrontendPolicy);
+app.UseCors();
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 
@@ -68,5 +82,3 @@ app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.MapEndpoints();
 
 app.Run();
-
-public partial class Program;
