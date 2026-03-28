@@ -5,14 +5,7 @@ using TwoDrive.Services.Common;
 
 namespace TwoDrive.Api.Endpoints;
 
-public sealed record GetFolderByIdResponse(
-    Guid Id,
-    Guid? ParentFolderId,
-    string Name,
-    string Path,
-    DateTime CreatedAt,
-    DateTime UpdatedAt
-    );
+public sealed record GetFolderByIdResponse : GetFolderByIdQueryResult;
 
 public sealed class GetFolderByIdEndpoint : IEndpoint
 {
@@ -25,18 +18,10 @@ public sealed class GetFolderByIdEndpoint : IEndpoint
             .Produces<GetFolderByIdResponse>(StatusCodes.Status200OK);
     }
 
-    private static async Task<IResult> HandleAsync([FromRoute] Guid FolderId, [FromServices] IQueryHandler<GetFolderByIdQuery, FolderDetailsDto> handler)
+    private static async Task<IResult> HandleAsync([FromRoute] Guid FolderId, [FromServices] IQueryHandler<GetFolderByIdQuery, GetFolderByIdQueryResult> handler)
     {
-        var folder = await handler.Handle(new GetFolderByIdQuery { FolderId = FolderId });
-        var response = new GetFolderByIdResponse(
-            folder.Id,
-            folder.ParentFolderId,
-            folder.Name,
-            folder.Path,
-            folder.CreatedAt,
-            folder.UpdatedAt);
-
-        return Results.Ok(response);
+        var result = await handler.Handle(new GetFolderByIdQuery { Id = FolderId });
+        return Results.Ok(result);
     }
 }
 

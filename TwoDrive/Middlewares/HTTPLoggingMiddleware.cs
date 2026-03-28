@@ -2,11 +2,11 @@
 
 namespace TwoDrive.Api.Middlewares;
 
-public sealed class LoggingMiddleware(RequestDelegate next)
+public sealed class HTTPLoggingMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
 
-    public async Task InvokeAsync(HttpContext context, ILogger<LoggingMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context, ILogger<HTTPLoggingMiddleware> logger)
     {
         using var _ = logger.BeginScope(new Dictionary<string, object?>
         {

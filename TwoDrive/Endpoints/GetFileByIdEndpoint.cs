@@ -5,16 +5,7 @@ using TwoDrive.Services.Common;
 
 namespace TwoDrive.Api.Endpoints;
 
-public sealed record GetFileByIdResponse(
-        Guid Id,
-        Guid FolderId,
-        string Name,
-        string MimeType,
-        long SizeBytes,
-        string StorageKey,
-        string Checksum,
-        DateTime CreatedAt,
-        DateTime UpdatedAt);
+public sealed record GetFileByIdResponse : GetFileByIdQueryResult;
 
 public sealed class GetFileByIdEndpoint : IEndpoint
 {
@@ -27,20 +18,9 @@ public sealed class GetFileByIdEndpoint : IEndpoint
             .Produces<GetFileByIdResponse>(StatusCodes.Status200OK);
     }
 
-    private static async Task<IResult> HandleAsync([FromRoute] Guid fileId, [FromServices] IQueryHandler<GetFileByIdQuery, FileDetailsDto> handler)
+    private static async Task<IResult> HandleAsync([FromRoute] Guid fileId, [FromServices] IQueryHandler<GetFileByIdQuery, GetFileByIdQueryResult> handler)
     {
-        var file = await handler.Handle(new GetFileByIdQuery { FileId = fileId });
-        var response = new GetFileByIdResponse(
-            file.Id,
-            file.FolderId,
-            file.Name,
-            file.MimeType,
-            file.SizeBytes,
-            file.StorageKey,
-            file.Checksum,
-            file.CreatedAt,
-            file.UpdatedAt);
-
-        return Results.Ok(response);
+        var result = await handler.Handle(new GetFileByIdQuery { Id = fileId });
+        return Results.Ok(result);
     }
 }
